@@ -1,0 +1,16 @@
+{
+    "task": "traffic_state_pred",
+    "model": "STGNN",
+    "dataset": "SZ_TAXI",
+
+    "exp_id": 111110,
+
+    "max_epoch": 500,
+    "batch_size": 64,
+    "patience": 15,
+    "use_early_stop": true,
+    "cache_dataset": false,
+    "output_window": 12,
+    "metrics": ["MAE", "RMSE", "Accuracy", "R2", "EVAR"]
+
+}

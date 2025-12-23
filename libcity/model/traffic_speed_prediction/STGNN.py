@@ -100,7 +100,7 @@ class GCN(nn.Module):
         return h
 
 
-class GWNET(AbstractTrafficStateModel):
+class STGNN(AbstractTrafficStateModel):
     def __init__(self, config, data_feature):
         self.adj_mx = data_feature.get('adj_mx')
         self.num_nodes = data_feature.get('num_nodes', 1)

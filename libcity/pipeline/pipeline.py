@@ -11,6 +11,7 @@ import random
 from libcity.config import ConfigParser
 from libcity.data import get_dataset
 from libcity.utils import get_executor, get_model, get_logger, ensure_dir, set_random_seed
+from logging import getLogger
 
 
 def run_model(task=None, model_name=None, dataset_name=None, config_file=None,
@@ -35,12 +36,12 @@ def run_model(task=None, model_name=None, dataset_name=None, config_file=None,
         exp_id = int(random.SystemRandom().random() * 100000)
         config['exp_id'] = exp_id
     # logger
-    logger = get_logger(config)
+    logger = getLogger()
     logger.info('Begin pipeline, task={}, model_name={}, dataset_name={}, exp_id={}'.
                 format(str(task), str(model_name), str(dataset_name), str(exp_id)))
     logger.info(config.config)
-    # seed
-    seed = config.get('seed', 0)
+    logger.info('----------------------------------------------------------------------------')
+    seed = config.get('seed', 43)
     set_random_seed(seed)
     # 加载数据集
     dataset = get_dataset(config)
@@ -60,7 +61,7 @@ def run_model(task=None, model_name=None, dataset_name=None, config_file=None,
     else:
         executor.load_model(model_cache_file)
     # 评估，评估结果将会放在 cache/evaluate_cache 下
-    executor.evaluate(test_data)
+    return executor.evaluate(test_data)
 
 
 def parse_search_space(space_file):

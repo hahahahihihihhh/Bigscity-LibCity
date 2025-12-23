@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import numpy.linalg as la
 from sklearn.metrics import r2_score, explained_variance_score
 
 
@@ -97,6 +98,13 @@ def masked_rmse_torch(preds, labels, null_val=np.nan, mask_val=None):
     labels[torch.abs(labels) < 1e-4] = 0
     return torch.sqrt(masked_mse_torch(preds=preds, labels=labels,
                                        null_val=null_val, mask_val=mask_val))
+
+
+def accuracy_torch(preds, labels):
+    preds = preds.cpu().detach().numpy().squeeze(-1)
+    labels = labels.cpu().detach().numpy().squeeze(-1)
+    F_norm = la.norm(labels - preds) / la.norm(labels)
+    return 1 - F_norm
 
 
 def r2_score_torch(preds, labels):
