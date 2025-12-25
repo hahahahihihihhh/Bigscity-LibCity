@@ -10,17 +10,18 @@ import numpy as np
 import logging
 import json
 
+
 dataset_name, model_name = "SZ_TAXI", "STGNN"
 log = "./logs/"
 cache = "./libcity/cache/"
-
 config_file = "config/{}/{}/config.json".format(dataset_name, model_name)
+
 
 def train(config, total = 1):
     predict_steps, eval_metrics = config['output_window'], config['metrics']
     save_dir = os.path.join(log, config['dataset'], config['model'])
 
-    dir_name = "test/"
+    dir_name = "v1_2/"
     # dir_name = ""
 
     if config.get('use_mh_adj', False):
@@ -96,6 +97,7 @@ def train(config, total = 1):
     logger.info('----------------------------------------------------------------------------')
     logger.info('{} steps Average: \n{}'.format(predict_steps, df_avg_steps_metrics))
     logger.info('{} steps Standard deviation: \n{}'.format(predict_steps, df_std_steps_metrics))
+
 
 if __name__ == '__main__':
     with open(config_file) as config:

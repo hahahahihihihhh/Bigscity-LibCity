@@ -5,10 +5,11 @@
   "apt_layer": true,
   "gcn_bool": true,
   "addaptadj": true,
-  "adjtype": "doubletransition",
+  "addfusionadj": true,
+  "adjtype": "transition",
   "bidir_adj_mx": false,
   "randomadj": true,
-  "aptonly": true,
+  "aptonly": false,
   "kernel_size": 2,
   "nhid": 32,
   "residual_channels": 32,
@@ -27,5 +28,6 @@
   "lr_decay": false,
   "clip_grad_norm": true,
   "max_grad_norm": 5,
-  "use_early_stop": false
+  "use_early_stop": false,
+  "eps": 1e-3
 }

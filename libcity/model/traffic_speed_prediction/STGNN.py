@@ -100,18 +100,97 @@ class GCN(nn.Module):
         return h
 
 
+class TemporalAttentionLayer(nn.Module):
+
+    def __init__(self, device, in_channels, num_of_vertices, num_of_timesteps):
+        super(TemporalAttentionLayer, self).__init__()
+        self.U1 = nn.Parameter(torch.FloatTensor(num_of_vertices).to(device))
+        self.U2 = nn.Parameter(torch.FloatTensor(in_channels, num_of_vertices).to(device))
+        self.U3 = nn.Parameter(torch.FloatTensor(in_channels).to(device))
+        self.be = nn.Parameter(torch.FloatTensor(1, num_of_timesteps, num_of_timesteps).to(device))
+        self.Ve = nn.Parameter(torch.FloatTensor(num_of_timesteps, num_of_timesteps).to(device))
+        self._reset_parameters()
+
+    def _reset_parameters(self):
+        nn.init.zeros_(self.be)
+        nn.init.xavier_uniform_(self.Ve)
+        nn.init.xavier_uniform_(self.U2)
+        nn.init.uniform_(self.U1, a=-0.1, b=0.1)
+        nn.init.uniform_(self.U3, a=-0.1, b=0.1)
+
+    def forward(self, x):
+        """
+        Args:
+            x: (batch_size, N, F_in, T)
+
+        Returns:
+            torch.tensor: (B, T, T)
+        """
+
+        lhs = torch.matmul(torch.matmul(x.permute(0, 3, 2, 1), self.U1), self.U2)
+        # x:(B, N, F_in, T) -> (B, T, F_in, N)
+        # (B, T, F_in, N)(N) -> (B,T,F_in)
+        # (B,T,F_in)(F_in,N)->(B,T,N)
+
+        rhs = torch.matmul(self.U3, x)  # (F)(B,N,F,T)->(B, N, T)   # 左张量最后一维，右张量倒数第二魏
+
+        product = torch.matmul(lhs, rhs)  # (B,T,N)(B,N,T)->(B,T,T)
+
+        e = torch.matmul(self.Ve, torch.sigmoid(product + self.be))  # (B, T, T)
+
+        e_normalized = F.softmax(e, dim=2)
+
+        return e_normalized
+
+
+class SATSkipGate(nn.Module):
+    """
+    SAT gate for skip feature maps (Select-Attend-Transfer)
+    Input/Output: s in (B, C, N, T)
+
+    Select:  s_sel = s ⊙ trelu(w)          (channel-wise)
+    Attend:  a = sigmoid(conv1x1(s_sel))   (spatial attention map, 1 channel)
+    Transfer: s_out = s_sel ⊙ a            (gated skip feature)
+    """
+    def __init__(self, channels: int):
+        super().__init__()
+        # W in paper: one scalar per channel
+        self.w = nn.Parameter(torch.ones(channels))  # init to 1 => keep original behavior at start
+        # K in paper: 1x1 filter to aggregate channels to 1 attention map
+        self.k = nn.Conv2d(channels, 1, kernel_size=(1, 1), bias=True)
+
+    @staticmethod
+    def trelu(x):
+        # truncated ReLU: clip to [0, 1]
+        return torch.clamp(x, min=0.0, max=1.0)
+
+    def forward(self, s):
+        # Select (channel-wise)
+        w = self.trelu(self.w).view(1, -1, 1, 1)     # (1, C, 1, 1)
+        s_sel = s * w                                # (B, C, N, T)
+        # Attend (spatial)
+        a = torch.sigmoid(self.k(s_sel))             # (B, 1, N, T)
+        # Transfer (gated feature)
+        s_out = s_sel * a                            # (B, C, N, T)
+        return s_out
+
+
 class STGNN(AbstractTrafficStateModel):
     def __init__(self, config, data_feature):
         self.adj_mx = data_feature.get('adj_mx')
+        self.A_sta = self.adj_mx
         self.num_nodes = data_feature.get('num_nodes', 1)
         self.feature_dim = data_feature.get('feature_dim', 2)
         super().__init__(config, data_feature)
 
+        self.eps = config.get('eps', 1e-3)
         self.dropout = config.get('dropout', 0.3)
         self.blocks = config.get('blocks', 4)
         self.layers = config.get('layers', 2)
         self.gcn_bool = config.get('gcn_bool', True)
         self.addaptadj = config.get('addaptadj', True)
+        self.addfusionadj = config.get('addfusionadj', True)
+        self.fc = nn.Linear(2, 1)
         self.adjtype = config.get('adjtype', 'doubletransition')
         self.randomadj = config.get('randomadj', True)
         self.aptonly = config.get('aptonly', True)
@@ -139,6 +218,7 @@ class STGNN(AbstractTrafficStateModel):
         self.gate_convs = nn.ModuleList()
         self.residual_convs = nn.ModuleList()
         self.skip_convs = nn.ModuleList()
+        self.skip_gates = nn.ModuleList()
         self.bn = nn.ModuleList()
         self.gconv = nn.ModuleList()
         self.start_conv = nn.Conv2d(in_channels=self.feature_dim,
@@ -200,6 +280,7 @@ class STGNN(AbstractTrafficStateModel):
                 self.skip_convs.append(nn.Conv2d(in_channels=self.dilation_channels,
                                                  out_channels=self.skip_channels,
                                                  kernel_size=(1, 1)))
+                self.skip_gates.append(SATSkipGate(self.skip_channels))  # 新增：SAT gate
                 self.bn.append(nn.BatchNorm2d(self.residual_channels))
                 new_dilation *= 2
                 receptive_field += additional_scope
@@ -217,6 +298,16 @@ class STGNN(AbstractTrafficStateModel):
                                     kernel_size=(1, 1),
                                     bias=True)
         self.receptive_field = receptive_field
+        self.num_skip_layers = self.blocks * self.layers
+        self.skip_alpha = nn.Parameter(torch.zeros(self.num_skip_layers))  # learnable layer weights
+        num_of_timestamps = receptive_field
+        self.tAtt = nn.ModuleList()
+        for b in range(self.blocks):
+            additional_scope = self.kernel_size - 1
+            for i in range(self.layers):
+                num_of_timestamps -= additional_scope
+                additional_scope *= 2
+                self.tAtt.append(TemporalAttentionLayer(self.device, self.residual_channels, self.num_nodes, num_of_timestamps))
         self._logger.info('receptive_field: ' + str(self.receptive_field))
 
     def forward(self, batch):
@@ -235,9 +326,23 @@ class STGNN(AbstractTrafficStateModel):
         # calculate the current adaptive adj matrix once per iteration
         new_supports = None
         if self.gcn_bool and self.addaptadj and self.supports is not None:
-            adp = F.softmax(F.relu(torch.mm(self.nodevec1, self.nodevec2)), dim=1)
-            new_supports = self.supports + [adp]
-
+            A_sta = torch.tensor(self.A_sta).to(self.device)
+            A_adp = F.softmax(F.relu(torch.mm(self.nodevec1, self.nodevec2)), dim=1)
+            if self.addfusionadj:
+                # fusion
+                A_stack = torch.stack([A_sta, A_adp], dim=-1)
+                gate = self.fc(A_stack)
+                F_gate = torch.sigmoid(gate).squeeze(-1)
+                A_fused = F_gate * A_adp + (1.0 - F_gate) * A_sta
+                A_thr = F.relu(A_fused - self.eps)
+                # row normalize
+                A_adpsta = A_thr / A_thr.sum(dim=1, keepdim=True)
+                A_adpsta = torch.nan_to_num(A_adpsta)
+                A_adpsta = torch.nan_to_num(A_adpsta, nan=0.0, posinf=0.0, neginf=0.0)
+                new_supports = self.supports + [A_adpsta]
+            else:
+                new_supports = self.supports + [A_adp]
+        skip_list = []
         # WaveNet layers
         for i in range(self.blocks * self.layers):
 
@@ -266,12 +371,14 @@ class STGNN(AbstractTrafficStateModel):
             s = x
             # (batch_size, dilation_channels, num_nodes, receptive_field-kernel_size+1)
             s = self.skip_convs[i](s)
+            s = self.skip_gates[i](s)  # SAT-gated skip (B, C, N, T_i)
+            skip_list.append(s)
             # (batch_size, skip_channels, num_nodes, receptive_field-kernel_size+1)
-            try:
-                skip = skip[:, :, :, -s.size(3):]
-            except(Exception):
-                skip = 0
-            skip = s + skip
+            # try:
+            #     skip = skip[:, :, :, -s.size(3):]
+            # except(Exception):
+            #     skip = 0
+            # skip = s + skip
             # (batch_size, skip_channels, num_nodes, receptive_field-kernel_size+1)
             if self.gcn_bool and self.supports is not None:
                 # (batch_size, dilation_channels, num_nodes, receptive_field-kernel_size+1)
@@ -284,10 +391,25 @@ class STGNN(AbstractTrafficStateModel):
                 # (batch_size, dilation_channels, num_nodes, receptive_field-kernel_size+1)
                 x = self.residual_convs[i](x)
                 # (batch_size, residual_channels, num_nodes, receptive_field-kernel_size+1)
+            x_temp = x.permute(0, 2, 1, 3)
+            temporal_at = self.tAtt[i](x_temp)
+            x_tat = torch.matmul(x.reshape(x_temp.shape[0], -1, x_temp.shape[3]), temporal_at) \
+                .reshape(x_temp.shape[0], x_temp.shape[1], x_temp.shape[2], x_temp.shape[3])
+            x = x_tat.permute(0, 2, 1, 3)
             # residual: (batch_size, residual_channels, num_nodes, self.receptive_field)
             x = x + residual[:, :, :, -x.size(3):]
             # (batch_size, residual_channels, num_nodes, receptive_field-kernel_size+1)
             x = self.bn[i](x)
+        # ---- Weighted SAT Skip Aggregation ----
+        # Align all skip tensors to the same temporal length (use the smallest T)
+        min_t = min(s.size(3) for s in skip_list)
+        skip_list = [s[:, :, :, -min_t:] for s in skip_list]
+        # Layer-wise weights (softmax) -> (L,)
+        w = torch.softmax(self.skip_alpha, dim=0)
+        # Weighted sum
+        skip = 0.0
+        for i, s in enumerate(skip_list):
+            skip = skip + w[i] * s
         x = F.relu(skip)
         # (batch_size, skip_channels, num_nodes, self.output_dim)
         x = F.relu(self.end_conv_1(x))
