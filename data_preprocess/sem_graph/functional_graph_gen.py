@@ -5,7 +5,7 @@ import json
 import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr
-from libcity.data_preprocess.utils.utils import ensure_dir, initialize_seed
+from libcity.data_preprocess.utils.utils import ensure_dir, initialize_seed, toTxt
 
 dataset = "SZ_TAXI"
 with open("setting.json", "r", encoding="utf-8") as f:
@@ -21,6 +21,7 @@ num_node = params["num_node"]
 
 initialize_seed(43)
 poi_types = list(poi2id.keys())
+id2road = {v: k for k, v in road2id.items()}
 
 
 def functional_graph(kg_tuples):
@@ -65,6 +66,17 @@ def functional_graph(kg_tuples):
     fg_path = os.path.join(fg_prefix, "fg_s{}.csv".format(sparsity))
     pd.DataFrame(w_adj).to_csv(fg_path, index=False, header=None)
     print("The adjacent matrix of functional graph is generated!")
+    weight_fg_path = os.path.join(fg_prefix, 'w_fg_s{}.csv'.format(sparsity))
+    pd.DataFrame(w).to_csv(weight_fg_path, index=False, header=None)
+    print("The weighted matrix of temporal graph is generated!")
+    lst = []
+    for i in range(num_node):
+        for j in range(num_node):
+            if i != j and w_adj[i][j] == 1:
+                lst.append((id2road[i], 'adj_func', id2road[j]))
+    tri_fg_path = os.path.join(fg_prefix, 'tri_fg_s{}.txt'.format(sparsity))
+    toTxt(lst, tri_fg_path)
+    print("Triples of functional graph is generated!")
     return
 
 

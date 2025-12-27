@@ -5,7 +5,7 @@ import os.path
 import numpy as np
 import pandas as pd
 import time
-from libcity.data_preprocess.utils.utils import ensure_dir, initialize_seed, normalize
+from libcity.data_preprocess.utils.utils import ensure_dir, initialize_seed, normalize, toTxt
 
 dataset = "SZ_TAXI"
 with open("setting.json", "r", encoding="utf-8") as f:
@@ -13,6 +13,7 @@ with open("setting.json", "r", encoding="utf-8") as f:
 cfg = settings[dataset]
 
 params = cfg["params"]
+road2id = cfg["road2id"]
 
 assist_prefix = params["assist_prefix"]
 dataset_path = params["dataset_path"]
@@ -21,6 +22,8 @@ order = params["temporal_graph"]["order"]
 lag = params["temporal_graph"]["lag"]
 period = params["temporal_graph"]["period"]
 sparsity = params["temporal_graph"]["sparsity"]
+
+id2road = {v: k for k, v in road2id.items()}
 initialize_seed(43)
 
 
@@ -106,6 +109,17 @@ def temporal_graph(dtw_path):
     tg_path = os.path.join(tg_prefix, "tg_s{}.csv".format(sparsity))
     pd.DataFrame(w_adj).to_csv(tg_path, index=False, header=None)
     print("The adjacent matrix of temporal graph is generated!")
+    w_tg_path = os.path.join(tg_prefix, 'w_tg_s{}.csv'.format(sparsity))
+    pd.DataFrame(w).to_csv(w_tg_path, index=False, header=None)
+    print("The weight matrix of temporal graph is generated!")
+    lst = []
+    for i in range(num_node):
+        for j in range(num_node):
+            if i != j and w_adj[i][j] == 1:
+                lst.append((id2road[i], 'adj_temp', id2road[j]))
+    tri_tg_path = os.path.join(tg_prefix, 'tri_tg_s{}.txt'.format(sparsity))
+    toTxt(lst, tri_tg_path)
+    print("functional graph is generated!")
 
 
 if __name__ == '__main__':

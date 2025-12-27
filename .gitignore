@@ -16,3 +16,7 @@
 /data_preprocess/sem_graph/functional_graph/
 /data_preprocess/sem_graph/spatial_graph/
 /data_preprocess/sem_graph/temporal_graph/
+*.csv
+*.txt
+*.npy
+*.rel
