@@ -1,0 +1,37 @@
+{
+    "window": 12,
+    "normalize": 1,
+    "horizon": 12,
+    "batch_size": 64,
+    "order": 1,
+    "lag": 12,
+    "period": 288,
+    "sparsity": 0.01,
+
+    "hidden_dims": [[64, 64, 64], [64, 64, 64], [64, 64, 64]],
+    "first_layer_embedding_size": 64,
+    "out_layer_dim": 128,
+    "strides": 4,
+    "temporal_emb": true,
+    "spatial_emb": true,
+    "activation": "GLU",
+    "module_type": "individual",
+    "//": ["individual", "sharing"],
+
+    "train_loss": "none",
+    "clip": 10,
+    "max_epoch": 100,
+    "seed": 43,
+    "log_interval": 2000,
+    "learner": "adam",
+    "learning_rate": 0.001,
+    "patience": 20,
+    "lr_decay": false,
+    "lr_scheduler": "multisteplr",
+    "lr_decay_ratio": 0.1,
+    "steps": [5, 20, 40, 70],
+    "step_size": 10,
+
+    "mask": false,
+    "filename": "./raw_data/SZ_TAXI/SZ_TAXI.npz"
+}

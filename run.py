@@ -11,7 +11,7 @@ import logging
 import json
 
 
-dataset_name, model_name = "SZ_TAXI", "STGNN"
+dataset_name, model_name = "SZ_TAXI", "STFGNN"
 log = "./logs/"
 cache = "./libcity/cache/"
 config_file = "config/{}/{}/config.json".format(dataset_name, model_name)
@@ -21,11 +21,11 @@ def train(config, total = 1):
     predict_steps, eval_metrics = config['output_window'], config['metrics']
     save_dir = os.path.join(log, config['dataset'], config['model'])
 
-    dir_name = "v1_2/"
-    # dir_name = ""
+    # dir_name = "v1_2/"
+    dir_name = ""
 
-    if config.get('use_mh_adj', False):
-        dir_name += '{}d_{}hop_s{}_b{}'.format(config['ke_dim'], config['max_hop'], config['sparsity'], config['batch_size'])
+    # if config.get('use_mh_adj', False):
+    #     dir_name += '{}d_{}hop_s{}_b{}'.format(config['ke_dim'], config['max_hop'], config['sparsity'], config['batch_size'])
     save_dir = os.path.join(save_dir, dir_name)
     ensure_dir(save_dir)
 

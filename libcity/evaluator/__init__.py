@@ -7,6 +7,7 @@ from libcity.evaluator.road_representation_evaluator import RoadRepresentationEv
 from libcity.evaluator.eta_evaluator import ETAEvaluator
 from libcity.evaluator.traffic_accident_evaluator import TrafficAccidentEvaluator
 
+
 __all__ = [
     "TrajLocPredEvaluator",
     "TrafficStateEvaluator",
@@ -15,5 +16,5 @@ __all__ = [
     "MapMatchingEvaluator",
     "RoadRepresentationEvaluator",
     "ETAEvaluator",
-    "TrafficAccidentEvaluator",
+    "TrafficAccidentEvaluator"
 ]

@@ -142,3 +142,10 @@ def calculate_scaled_laplacian(adj_mx, lambda_max=2, undirected=True):
     identity = sp.identity(m, format='csr', dtype=lap.dtype)
     lap = (2 / lambda_max * lap) - identity
     return lap.astype(np.float32).tocoo()
+
+
+def normalize(a):
+    mu = np.mean(a, axis=1, keepdims=True)
+    std = np.std(a, axis=1, keepdims=True)
+    # print(std)
+    return np.divide(a - mu, std, out=np.zeros_like(a - mu), where=std != 0)
