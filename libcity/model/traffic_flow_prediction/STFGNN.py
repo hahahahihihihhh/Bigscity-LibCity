@@ -2,13 +2,10 @@
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn.functional as F
 import torch.nn as nn
 
 from libcity.model.abstract_model import AbstractModel
 from libcity.model import loss
-
-from libcity.data.utils import load_pickle
 
 from libcity.model.utils import normalize
 
@@ -572,13 +569,13 @@ class STFGNN(AbstractModel):
             adj_mx.shape), flush=True)
         return adj_mx
 
-    def forward(self, inputs):   # batch
+    def forward(self, batch):   # batch
         """
         :param x: B, Tin, N, Cin
         :return: B, Tout, N, Cout
         """
+        inputs = batch['X']
         x = torch.relu(self.First_FC(inputs))  # B, Tin, N, Cin
-        #print(1)
 
         for model in self.STSGCLS:
             x = model(x, self.mask)

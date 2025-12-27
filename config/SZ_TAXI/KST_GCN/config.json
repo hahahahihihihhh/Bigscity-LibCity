@@ -1,0 +1,16 @@
+{
+    "task": "traffic_state_pred",
+    "model": "KST_GCN",
+    "dataset": "SZ_TAXI",
+
+    "exp_id": 130111,
+    "ke_dim": 20,
+
+    "max_epoch": 500,
+    "batch_size": 32,
+    "patience": 15,
+    "use_early_stop": true,
+    "cache_dataset": false,
+    "output_window": 12,
+    "metrics": ["MAE", "RMSE", "Accuracy", "R2", "EVAR"]
+}

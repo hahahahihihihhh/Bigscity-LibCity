@@ -1,0 +1,160 @@
+{
+  "SZ_TAXI": {
+    "params": {
+      "assist_prefix": "./SZ_TAXI/assist",
+      "dataset_path": "../raw_data/SZ_TAXI/sz_speed.csv",
+      "dataset_rel_path": "../raw_data/SZ_TAXI/SZ_TAXI.rel",
+      "num_node": 156,
+      "kg_prefix": "../sz_kg",
+      "functional_graph": {
+        "sparsity": 0.01
+      },
+      "temporal_graph": {
+        "order": 1,
+        "lag": 12,
+        "period": 672,
+        "sparsity": 0.03
+      },
+      "spatial_graph": {
+        "link_cap": 3,
+        "decay_ratio": 0.5,
+        "sparsity": 0.02
+      }
+
+    },
+
+    "poi_zh2en": {
+      "住宿服务": "accommodations",
+      "餐饮服务": "catering_services",
+      "教育服务": "education_services",
+      "公司企业": "enterprises",
+      "生活服务": "living_services",
+      "医疗服务": "medical_services",
+      "其他信息": "others",
+      "购物服务": "shopping_services",
+      "交通设施服务": "transportation_facilities"
+    },
+
+    "weather2id": {
+      "Broken_clouds.": 0,
+      "Clear.": 1,
+      "Fair": 2,
+      "Fog.": 3,
+      "Haze.": 4,
+      "Light_rain._Fog.": 5,
+      "Light_rain._More_clouds_than_sun.": 6,
+      "Light_rain._Mostly_cloudy.": 7,
+      "Light_rain._Passing_clouds.": 8,
+      "More_clouds_than_sun.": 9,
+      "Mostly_cloudy.": 10,
+      "Overcast.": 11,
+      "Partly_sunny.": 12,
+      "Passing_clouds.": 13,
+      "Rain._Mostly_cloudy.": 14,
+      "Rain._Passing_clouds.": 15,
+      "Scattered_clouds.": 16,
+      "Sprinkles._Passing_clouds.": 17,
+      "Sunny.": 18
+    },
+
+    "poi2id": {
+      "accommodations": 0,
+      "catering_services": 1,
+      "education_services": 2,
+      "enterprises": 3,
+      "living_services": 4,
+      "medical_services": 5,
+      "others": 6,
+      "shopping_services": 7,
+      "transportation_facilities": 8
+    },
+
+    "road2id": {
+        "90217": 0, "90218": 1, "90219": 2, "90220": 3, "90221": 4, "90222": 5,
+        "90223": 6, "90224": 7, "90225": 8, "90226": 9, "92231": 10, "92237": 11,
+        "92241": 12, "92688": 13, "92689": 14, "92690": 15, "92691": 16, "92692": 17,
+        "92693": 18, "92694": 19, "92695": 20, "92696": 21, "92697": 22, "92856": 23,
+        "92858": 24, "92876": 25, "92877": 26, "92878": 27, "92881": 28, "92883": 29,
+        "92899": 30, "92900": 31, "93220": 32, "93851": 33, "93852": 34, "94159": 35,
+        "94160": 36, "94161": 37, "94162": 38, "94163": 39, "94164": 40, "95068": 41,
+        "95069": 42, "95070": 43, "95071": 44, "95072": 45, "95073": 46, "95075": 47,
+        "95501": 48, "95502": 49, "95503": 50, "95504": 51, "95505": 52, "95506": 53,
+        "95507": 54, "95508": 55, "95570": 56, "95571": 57, "95598": 58, "95599": 59,
+        "95915": 60, "95933": 61, "95934": 62, "95935": 63, "95936": 64, "95968": 65,
+        "95969": 66, "95970": 67, "95975": 68, "96475": 69, "96478": 70, "96484": 71,
+        "96485": 72, "96486": 73, "96758": 74, "96760": 75, "96761": 76, "97349": 77,
+        "98662": 78, "98666": 79, "98668": 80, "98669": 81, "98670": 82, "98671": 83,
+        "98672": 84, "99627": 85, "99628": 86, "99629": 87, "99630": 88, "99631": 89,
+        "99632": 90, "99880": 91, "99881": 92, "99882": 93, "99902": 94, "99903": 95,
+        "99904": 96, "99905": 97, "99906": 98, "99907": 99, "99909": 100, "99910": 101,
+        "99953": 102, "101297": 103, "101298": 104, "101299": 105, "101300": 106,
+        "101301": 107, "101302": 108, "101303": 109, "101304": 110, "101305": 111,
+        "101306": 112, "101307": 113, "102120": 114, "102121": 115, "102122": 116,
+        "102123": 117, "102124": 118, "102128": 119, "102129": 120, "102134": 121,
+        "102137": 122, "102138": 123, "103351": 124, "103763": 125, "103764": 126,
+        "103765": 127, "104638": 128, "111369": 129, "111370": 130, "111380": 131,
+        "111969": 132, "111973": 133, "111974": 134, "112101": 135, "112102": 136,
+        "112103": 137, "112138": 138, "112139": 139, "112140": 140, "112141": 141,
+        "112142": 142, "112671": 143, "112727": 144, "112728": 145, "112746": 146,
+        "116097": 147, "116098": 148, "116099": 149, "116100": 150, "116157": 151,
+        "116219": 152, "116220": 153, "116221": 154, "117189": 155
+    }
+
+
+  },
+
+  "NYCBike": {
+    "paths": {
+      "prefix_path_osm": "./raw_data/NYCBike/assist_data",
+      "prefix_path_poi": "./raw_data/NYCBike/assist_data/POI",
+      "prefix_path_weather": "./raw_data/NYCBike/assist_data/weather/2014-04",
+      "prefix_path_meteor_distr": "./raw_data/NYCBike/assist_data/weather/2014-04/meteor_distr",
+      "osm_file": "new-york-251207.osm.pbf",
+      "poi_filter_file": "poi_filter.csv",
+      "weather_data_file": "nyc_weather_2014-04_{}.json"
+    },
+    "grid": {
+      "lon_min": -74.05,
+      "lon_max": -73.75,
+      "lat_min": 40.63,
+      "lat_max": 40.85,
+      "H": 16,
+      "W": 8
+    },
+    "time_splits": [
+      ["2014-04-01", "2014-04-10"],
+      ["2014-04-01", "2014-04-10"],
+      ["2014-04-21", "2014-04-30"]
+    ],
+    "start_time": "2014-04-01 14:00:00",
+    "end_time": "2014-04-30 14:00:00"
+  },
+
+  "TDRIVE": {
+    "paths": {
+      "prefix_path_osm": "./raw_data/TDRIVE/assist_data",
+      "prefix_path_poi": "./raw_data/TDRIVE/assist_data/POI",
+      "prefix_path_weather": "./raw_data/TDRIVE/assist_data/weather/2015-06",
+      "prefix_path_meteor_distr": "./raw_data/TDRIVE/assist_data/weather/2015-06/meteor_distr",
+      "osm_file": "beijing-251207.osm.pbf",
+      "poi_filter_file": "poi_filter.csv",
+      "weather_data_file": "bj_weather_2015-06_{}.json"
+    },
+    "grid": {
+      "lon_min": 116.25,
+      "lon_max": 116.64,
+      "lat_min": 39.83,
+      "lat_max": 40.12,
+      "H": 32,
+      "W": 32
+    },
+    "time_splits": [
+      ["2015-06-01", "2015-06-10"],
+      ["2015-06-11", "2015-06-20"],
+      ["2015-06-21", "2015-06-30"]
+    ],
+    "start_time": "2015-06-01 14:00:00",
+    "end_time": "2015-06-30 14:00:00"
+  }
+
+}

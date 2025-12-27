@@ -8,7 +8,7 @@
 
     "max_epoch": 500,
     "batch_size": 32,
-    "patience": 15,
+    "patience": 20,
     "use_early_stop": true,
     "cache_dataset": false,
     "output_window": 12,
