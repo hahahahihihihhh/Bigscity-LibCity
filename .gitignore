@@ -20,3 +20,4 @@
 *.txt
 *.npy
 *.rel
+*.pickle
