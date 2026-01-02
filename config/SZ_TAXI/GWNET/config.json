@@ -3,9 +3,9 @@
     "model": "GWNET",
     "dataset": "SZ_TAXI",
 
-    "exp_id": 111110,
+    "exp_id": 111110111,
 
-    "max_epoch": 500,
+    "max_epoch": 1,
     "batch_size": 64,
     "patience": 15,
     "use_early_stop": true,

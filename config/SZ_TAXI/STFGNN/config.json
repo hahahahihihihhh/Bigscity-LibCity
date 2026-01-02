@@ -3,7 +3,7 @@
     "model": "STFGNN",
     "dataset": "SZ_TAXI",
 
-    "exp_id": 1234567,
+    "exp_id": 123458,
     "sparsity": 0.02,
 
     "max_epoch": 500,

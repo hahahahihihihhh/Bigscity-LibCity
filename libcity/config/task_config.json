@@ -485,7 +485,7 @@
         },
         "STFGNN": {
             "dataset_class": "TrafficStatePointDataset",
-            "executor": "TrafficStateExecutor",
+            "executor": "STFGNNExecutor",
             "evaluator": "TrafficStateEvaluator"
         },
         "KST_GCN": {
@@ -495,7 +495,7 @@
         },
         "KE_GWN": {
             "dataset_class": "TrafficStatePointDataset",
-            "executor": "STFGNNExecutor",
+            "executor": "TrafficStateExecutor",
             "evaluator": "TrafficStateEvaluator"
         }
     },

@@ -45,10 +45,6 @@ def floyed(edge):
             for _k in range(num_node):
                 if dis[_i][_k] + dis[_k][_j] < dis[_i][_j]:
                     dis[_i][_j] = dis[_i][_k] + dis[_k][_j]
-    # for _i in range(args.num_node):
-    #     for _j in range(args.num_node):
-    #         if (dis[_i][_j] != INF):
-    #             print(_i, _j, dis[_i][_j])
     return dis
 
 
@@ -77,4 +73,3 @@ if __name__ == '__main__':
     edge = getEdge(dataset_rel_df)
     dis = floyed(edge)
     spatial_graph(dis)
-    # print(dis)

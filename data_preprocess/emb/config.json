@@ -1,0 +1,44 @@
+{
+  "num_nodes": 156,
+  "ke_dim": 64,
+  "max_hop": 1,
+  "sparsity": "3",
+
+  "feat_fuse": "cat",
+  "path_fuse": "maxpooling",
+  "mh_encoder_type": "attention",
+
+  "attn_num_layers": 1,
+  "attn_num_heads": 1,
+
+  "SZ_TAXI": {
+    "S_kg": {
+      "kg_prefix": "../kg/SZ_TAXI/S_kg",
+      "emb_prefix": "./kr_ear/S_{}d"
+    },
+
+    "poi_kg": {
+      "kg_prefix": "../kg/SZ_TAXI/poi_kg",
+      "emb_prefix": "./kr_ear/poi_{}d"
+    },
+
+    "poi_S_kg": {
+      "kg_prefix": "../kg/SZ_TAXI/poi_S_kg",
+      "emb_prefix": "./kr_ear/poi_S_{}d"
+    },
+
+    "poi_wSTF_kg": {
+      "kg_prefix": "../kg/SZ_TAXI/poi_wSTF_kg/s{}",
+      "emb_prefix": "./kr_ear/poi_STF_{}d_s{}"
+    },
+
+    "wSTF_kg": {
+      "kg_prefix": "../kg/SZ_TAXI/wSTF_kg/s{}",
+      "emb_prefix": "./kr_ear/STF_{}d_s{}"
+    },
+
+    "mh_score_dir": "../../kg_assist/SZ_TAXI/MCK_GWN"
+
+  }
+
+}

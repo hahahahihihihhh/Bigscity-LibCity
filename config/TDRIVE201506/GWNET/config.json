@@ -1,0 +1,17 @@
+{
+    "task": "traffic_state_pred",
+    "model": "GWNET",
+    "dataset": "TDRIVE201506",
+
+    "exp_id": 11,
+
+    "max_epoch": 500,
+    "batch_size": 64,
+    "patience": 15,
+    "use_early_stop": true,
+    "cache_dataset": false,
+    "input_window": 168,
+    "output_window": 3,
+    "metrics": ["MAE", "RMSE", "masked_MAPE"]
+
+}

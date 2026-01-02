@@ -131,7 +131,7 @@ class STFGNNExecutor(AbstractExecutor):
                 trainx = batch['X']  # [batch_size, window, num_nodes, dim]
                 trainy = batch['y']  # [batch_size, horizon, num_nodes, dim]
                 self.optimizer.zero_grad()
-                output = self.model(trainx)
+                output = self.model(batch)
                 loss = self.criterion(self.scaler.inverse_transform(output),
                                       self.scaler.inverse_transform(trainy))
                 loss.backward()
@@ -145,23 +145,21 @@ class STFGNNExecutor(AbstractExecutor):
             # valid_loss = []
             # y_preds = []
             # y_truths = []
-            self.model.eval()
-            self.evaluator.clear()
+
             t2 = time.time()
             with torch.no_grad():
+                self.model.eval()
+                loss_func = self.model.calculate_loss
+                losses = []
                 for iter, batch in enumerate(valid_data):
                     batch.to_tensor(self.device)
-                    valx = batch['X']
-                    valy = batch['y']
-                    output = self.model(valx)
-                    y_pred = self.scaler.inverse_transform(output)
-                    y_true = self.scaler.inverse_transform(valy)
-                    self.evaluator.collect({'y_true': y_true, 'y_pred': y_pred})
+                    loss = loss_func(batch)
+                    self._logger.debug(loss.item())
+                    losses.append(loss.item())
             end_time = time.time()
             eval_time.append(end_time - t2)
-            valid_result = self.evaluator.evaluate()
-            monitor_metric = ('masked_MAE@1' if self.mask else 'MAE@1')
-            mvalid_loss = float(valid_result[monitor_metric])
+            mvalid_loss = np.mean(losses)
+            self._writer.add_scalar('eval loss', mvalid_loss, epoch)
             # print(
             #     '| end of epoch {:3d} | time: {:5.2f}s | train_loss {:5.4f} | valid mae {:5.4f}'.format(
             #         epoch, (time.time() - epoch_start_time), mtrain_loss, \
@@ -237,22 +235,17 @@ class STFGNNExecutor(AbstractExecutor):
         self._logger.info('Start evaluating ...')
         with torch.no_grad():
             self.model.eval()
-            # self.evaluator.clear()
             y_truths = []
             y_preds = []
             for iter, batch in enumerate(test_data):
                 batch.to_tensor(self.device)
                 testx = batch['X']
-                # x = torch.from_numpy(x).float().to(self.device)
-                output = self.model.predict(testx)
+                output = self.model.predict(batch)
                 testy = batch['y']
                 y_true = self.scaler.inverse_transform(testy)   # testy[..., :self.output_dim]
                 y_pred = self.scaler.inverse_transform(output)   # output[..., :self.output_dim]
                 y_truths.append(y_true.detach().cpu().numpy())
                 y_preds.append(y_pred.detach().cpu().numpy())
-                # evaluate_input = {'y_true': y_true, 'y_pred': y_pred}
-                # self.evaluator.collect(evaluate_input)
-            # self.evaluator.save_result(self.evaluate_res_dir)
             y_preds = np.concatenate(y_preds, axis=0)
             y_truths = np.concatenate(y_truths, axis=0)  # concatenate on batch
             outputs = {'prediction': y_preds, 'truth': y_truths}

@@ -6,6 +6,7 @@ from libcity.evaluator.map_matching_evaluator import MapMatchingEvaluator
 from libcity.evaluator.road_representation_evaluator import RoadRepresentationEvaluator
 from libcity.evaluator.eta_evaluator import ETAEvaluator
 from libcity.evaluator.traffic_accident_evaluator import TrafficAccidentEvaluator
+from libcity.evaluator.stfgnn_evaluator import STFGNNEvaluator
 
 
 __all__ = [
@@ -16,5 +17,6 @@ __all__ = [
     "MapMatchingEvaluator",
     "RoadRepresentationEvaluator",
     "ETAEvaluator",
-    "TrafficAccidentEvaluator"
+    "TrafficAccidentEvaluator",
+    "STFGNNEvaluator"
 ]

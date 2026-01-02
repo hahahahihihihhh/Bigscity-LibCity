@@ -101,10 +101,13 @@ def masked_rmse_torch(preds, labels, null_val=np.nan, mask_val=None):
 
 
 def accuracy_torch(preds, labels):
-    preds = preds.cpu().detach().numpy().squeeze(-1)
-    labels = labels.cpu().detach().numpy().squeeze(-1)
-    F_norm = la.norm(labels - preds) / la.norm(labels)
-    return 1 - F_norm
+    preds = preds.detach().cpu().numpy()
+    labels = labels.detach().cpu().numpy()
+    diff_norm = la.norm(labels - preds)
+    label_norm = la.norm(labels)
+    if label_norm == 0:
+        return 0.0
+    return 1.0 - diff_norm / label_norm
 
 
 def r2_score_torch(preds, labels):
