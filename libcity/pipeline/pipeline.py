@@ -61,7 +61,7 @@ def run_model(task=None, model_name=None, dataset_name=None, config_file=None,
     else:
         executor.load_model(model_cache_file)
     # 评估，评估结果将会放在 cache/evaluate_cache 下
-    return executor.evaluate(test_data)
+    return executor.evaluate(valid_data)
 
 
 def parse_search_space(space_file):
