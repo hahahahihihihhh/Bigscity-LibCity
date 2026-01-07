@@ -1,0 +1,17 @@
+{
+    "task": "traffic_state_pred",
+    "model": "GWNET",
+    "dataset": "NYCTAXI201403",
+
+    "exp_id": 11,
+
+    "max_epoch": 500,
+    "batch_size": 32,
+    "patience": 15,
+    "use_early_stop": true,
+    "cache_dataset": false,
+    "input_window": 24,
+    "output_window": 3,
+    "metrics": ["MAE", "RMSE", "masked_MAPE", "MSE"]
+
+}
