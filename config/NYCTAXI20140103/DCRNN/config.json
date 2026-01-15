@@ -1,13 +1,13 @@
 {
     "task": "traffic_state_pred",
-    "model": "GWNET",
-    "dataset": "NYCTAXI201403",
+    "model": "DCRNN",
+    "dataset": "NYCTAXI20140103",
 
-    "exp_id": 11,
+    "exp_id": 3,
 
-    "max_epoch": 500,
+    "max_epoch": 100,
     "batch_size": 32,
-    "patience": 15,
+    "patience": 10,
     "use_early_stop": true,
     "cache_dataset": false,
     "input_window": 24,
