@@ -21,3 +21,4 @@
 *.npy
 *.rel
 *.pickle
+**/.cache/

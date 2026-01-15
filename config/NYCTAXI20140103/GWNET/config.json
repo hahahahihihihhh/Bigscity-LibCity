@@ -5,9 +5,9 @@
 
     "exp_id": 4,
 
-    "max_epoch": 100,
+    "max_epoch": 200,
     "batch_size": 32,
-    "patience": 10,
+    "patience": 15,
     "use_early_stop": true,
     "cache_dataset": false,
     "input_window": 24,

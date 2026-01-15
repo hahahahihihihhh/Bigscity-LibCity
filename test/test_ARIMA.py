@@ -19,19 +19,20 @@ config = {
     'p_range': [0, 4],
     'd_range': [0, 3],
     'q_range': [0, 4],
-    'dataset': 'METR_LA',
+    'dataset': 'NYCTAXI20140103',
     'train_rate': 0.7,
     'eval_rate': 0.1,
-    'input_window': 12,
+    'input_window': 24,
     'output_window': 3,
-    'metrics': ['MAE', 'MAPE', 'MSE', 'RMSE', 'masked_MAE',
-                'masked_MAPE', 'masked_MSE', 'masked_RMSE', 'R2', 'EVAR']
+    # 'metrics': ['MAE', 'MAPE', 'MSE', 'RMSE', 'masked_MAE',
+    #             'masked_MAPE', 'masked_MSE', 'masked_RMSE', 'R2', 'EVAR'],
+    'metrics': ['masked_MAE', 'masked_RMSE', 'masked_MAPE']
 }
 
 
 def get_data(dataset):
     # path
-    path = 'raw_data/' + dataset + '/'
+    path = '../raw_data/' + dataset + '/'
     config_path = path + 'config.json'
     dyna_path = path + dataset + '.dyna'
     geo_path = path + dataset + '.geo'

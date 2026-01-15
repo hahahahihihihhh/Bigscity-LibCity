@@ -1,0 +1,19 @@
+### kg2att_rel.py
+
+脚本用于将 poi_kg & adj_kg 转化为KR-EAR知识图谱表征的输入
+
+  python scripts/kg2att_rel.py --dataset NYCTAXI20140103
+
+- train-rel.txt: training file of relations, format (e1, e2, rel).
+- ~~test-rel.txt: test file of relations, same format as train-rel.txt.~~
+- train-attr.txt: training file of attributes, format (e1, val, attar).
+- ~~test-attr.txt: test file of attributes, same format as train-attr.txt.~~
+- entity2id.txt: all entities and corresponding ids, one per line.
+- relation2id.txt: all relations and corresponding ids, one per line.
+- attribute2id.txt: all attributes and corresponding ids, one per line.
+- val2id.txt: : all values and corresponding ids, one per line.
+- attribute_val.txt: the value set of each attribute
+
+### embeddingTxt2assistCsv.py
+
+将KR-EAR的嵌入表示，转化为辅助增强的csv矩阵

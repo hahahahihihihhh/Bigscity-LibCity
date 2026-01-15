@@ -104,11 +104,13 @@ class TGCNCell(nn.Module):
 
     def _Unit_static(self, inputs):
         x, e = inputs
-        unit_matrix = torch.matmul(x, e)
+        x = x.view(x.size(0), -1, self.input_dim)
+        unit_matrix = torch.einsum("bni,nd->bid", x, e)  # (B, I, D)
         self.weight_unit, self.bias_unit = self.weights[(self.ke_dim, self.num_nodes)], self.biases[(self.num_nodes,)]
         self.x1 = torch.matmul(unit_matrix, self.weight_unit)
         self.x_output = self.x1 + self.bias_unit
-        return torch.relu(self.x_output)
+        self.x_output = torch.relu(self.x_output)
+        return self.x_output.reshape(x.size(0), -1)
 
     def _gc(self, inputs, state, output_size, bias_start=0.0):
         """
@@ -131,7 +133,7 @@ class TGCNCell(nn.Module):
         embedding1 = kgembedding_nor.dropna(axis=1)
         embeddings = torch.tensor(embedding1.values, dtype=torch.float32).to(self._device)
 
-        inputs = self._Unit_static([inputs, embeddings])
+        inputs = self._Unit_static([inputs, embeddings])    # (batch, self.num_nodes * self.dim)
 
         batch_size = inputs.shape[0]
         inputs = torch.reshape(inputs, (batch_size, self.num_nodes, -1))  # (batch, self.num_nodes, self.dim)
@@ -166,7 +168,7 @@ class KST_GCN(AbstractTrafficStateModel):
         self.num_nodes = data_feature.get('num_nodes', 1)
         config['num_nodes'] = self.num_nodes
         self.input_dim = data_feature.get('feature_dim', 1)
-        self.output_dim = data_feature.get('output_dim', 1)
+        self.output_dim = data_feature.get('feature_dim', 1)
         self.gru_units = int(config.get('rnn_units', 64))
         self.lam = config.get('lambda', 0.0015)
 

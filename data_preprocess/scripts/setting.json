@@ -1,0 +1,9 @@
+{
+  "NYCTAXI20140103": {
+    "attribute_file": "poi_kg.csv",
+    "relation_file": "adj_kg.csv",
+    "dim": 20,
+    "model": "KST_GCN"
+  }
+
+}
