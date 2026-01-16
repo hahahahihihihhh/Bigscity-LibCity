@@ -316,11 +316,11 @@ class STFGNN(AbstractModel):
         self.file_name = self.config.get("filename", f"./raw_data/{config['dataset']}/{config['dataset']}.npz")
         self.adj_mx = self.data_feature["adj_mx"]
 
-        history = self.config.get("window", 12)
+        history = self.config.get("input_window", 12)
         num_of_vertices = data_feature.get('num_nodes', 1)
 
-        in_dim = self.config.get("input_dim", 1)
-        out_dim = self.config.get("output_dim", 1)
+        in_dim = data_feature.get("feature_dim", 1)
+        out_dim = data_feature.get("output_dim", 1)
         hidden_dims = self.config.get("hidden_dims", None)
         first_layer_embedding_size = self.config.get("first_layer_embedding_size", None)
         out_layer_dim = self.config.get("out_layer_dim", None)
@@ -328,7 +328,7 @@ class STFGNN(AbstractModel):
         use_mask = self.config.get("mask")
         temporal_emb = self.config.get("temporal_emb", True)
         spatial_emb = self.config.get("spatial_emb", True)
-        horizon = self.config.get("horizon", 12)
+        horizon = self.config.get("output_window", 12)
         strides = self.config.get("strides", 4)
 
         self.num_of_vertices = num_of_vertices
