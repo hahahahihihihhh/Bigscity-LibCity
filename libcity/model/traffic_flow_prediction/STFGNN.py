@@ -313,7 +313,7 @@ class STFGNN(AbstractModel):
         self.data_feature = data_feature
         self.scaler = data_feature["scaler"]
         self.num_batches = data_feature["num_batches"]
-        self.file_name = self.config.get("filename", " ")
+        self.file_name = self.config.get("filename", f"./raw_data/{config['dataset']}/{config['dataset']}.npz")
         self.adj_mx = self.data_feature["adj_mx"]
 
         history = self.config.get("window", 12)
@@ -517,7 +517,7 @@ class STFGNN(AbstractModel):
             data=pd.read_csv(fname,header=None)
         '''
         # data=data.as_matrix()
-        data = np.reshape(data, [-1, 96, N])
+        data = np.reshape(data, [-1, 24, N])
         return data[0:ntr]
 
     def _construct_dtw(self):

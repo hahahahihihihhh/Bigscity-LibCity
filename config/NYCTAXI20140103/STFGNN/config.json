@@ -13,5 +13,4 @@
     "input_window": 24,
     "output_window": 3,
     "metrics": ["masked_MAE", "masked_RMSE", "masked_MAPE"]
-
 }

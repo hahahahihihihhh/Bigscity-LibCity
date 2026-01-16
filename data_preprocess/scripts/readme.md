@@ -14,6 +14,6 @@
 - val2id.txt: : all values and corresponding ids, one per line.
 - attribute_val.txt: the value set of each attribute
 
-### embeddingTxt2assistCsv.py
+### embedding_txt2assistCsv.py
 
-将KR-EAR的嵌入表示，转化为辅助增强的csv矩阵
+将KR-EAR的txt嵌入表示，转化为辅助增强的csv矩阵

@@ -40,10 +40,10 @@ import numpy as np
 import pandas as pd
 
 
-dataset = "NYCTAXI20140103"
+dataset, model = "NYCTAXI20140103", "KST_GCN"
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
-cfg = settings[dataset]
+cfg = settings[dataset][model]
 attribute_file = cfg["attribute_file"]
 relation_file = cfg["relation_file"]
 

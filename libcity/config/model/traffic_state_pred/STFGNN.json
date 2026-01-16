@@ -5,7 +5,7 @@
     "batch_size": 64,
     "order": 1,
     "lag": 12,
-    "period": 288,
+    "period": 72,
     "sparsity": 0.01,
 
     "hidden_dims": [[64, 64, 64], [64, 64, 64], [64, 64, 64]],
@@ -32,6 +32,5 @@
     "steps": [5, 20, 40, 70],
     "step_size": 10,
 
-    "mask": false,
-    "filename": "./raw_data/SZ_TAXI/SZ_TAXI.npz"
+    "mask": false
 }

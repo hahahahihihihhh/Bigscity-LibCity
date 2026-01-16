@@ -28,7 +28,6 @@ scripts/txt2csv.py
 - 默认输出 CSV 不写表头，避免影响你后续用 header=None 读取
 """
 
-import argparse
 import csv
 import json
 from pathlib import Path
@@ -37,12 +36,11 @@ from typing import List, Optional, Tuple
 import numpy as np
 
 
-dataset = "NYCTAXI20140103"
+dataset, model = "NYCTAXI20140103", "KST_GCN"
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
-cfg = settings[dataset]
-dim = cfg["dim"]
-model = cfg["model"]
+cfg = settings[dataset][model]
+dim = cfg["ke_dim"]
 
 
 def _is_int_token(s: str) -> bool:
@@ -146,7 +144,6 @@ def main():
     print("  src:", src)
     print("  dst:", dst)
     print("  shape:", mat.shape, ("with ids" if ids is not None else "no ids"))
-
 
 
 if __name__ == "__main__":

@@ -3,27 +3,25 @@ import json
 import pandas as pd
 import torch
 
-from encoder.att_encoder import AttEncoder
-from encoder.rel_encoder import process_feats, PathAttention, MHScoreLayer, gen_origin_path_feats
-from libcity.data_preprocess.utils.utils import read_emb, initialize_seed, load_triples
+from libcity.data_preprocess.emb.encoder.att_encoder import AttEncoder
+from libcity.data_preprocess.emb.encoder.rel_encoder import process_feats, PathAttention, MHScoreLayer, gen_origin_path_feats
+from libcity.data_preprocess.utils.utils import read_emb, initialize_seed
 
 
-dataset = "SZ_TAXI"
+dataset, model = "NYCTAXI20140103", "KMHNet"
 initialize_seed(43)
 device = torch.device('cuda')
-config_file = 'config.json'
-with open(config_file) as config:
-    config = json.load(config)
-
-num_nodes = config["num_nodes"]
-ke_dim, max_hop = config['ke_dim'], config['max_hop']
-attn_num_layers, attn_num_heads = config["attn_num_layers"], config["attn_num_heads"]
+with open("setting.json", "r", encoding="utf-8") as f:
+    settings = json.load(f)
+cfg = settings[dataset][model]
+num_nodes = cfg["num_nodes"]
+ke_dim, max_hop = cfg['ke_dim'], cfg['max_hop']
+attn_num_layers, attn_num_heads = cfg["attn_num_layers"], cfg["attn_num_heads"]
+ent_rel_ent_list = cfg["ent_rel_ent_list"]
 key_dim, val_dim = ke_dim, ke_dim
 
-dataset_config = config[dataset]
-poi_kg_prefix = dataset_config['poi_S_kg']['kg_prefix']
-poi_kg_emb_prefix = dataset_config['poi_S_kg']['emb_prefix'].format(ke_dim)
-mh_score_dir = dataset_config['mh_score_dir']
+kg_emb_prefix = f"../kg/{dataset}/KR-EAR/embedding/d{ke_dim}"
+mh_score_dir = f"../../kg_assist/{dataset}/{model}"
 
 
 def att_encode(ent_emb, att_emb, val_emb, att_triples):
@@ -33,8 +31,10 @@ def att_encode(ent_emb, att_emb, val_emb, att_triples):
 
     return att_ent_emb
 
+
 def rel_encode(ent_emb, rel_emb, dct_triples, rel_weight):
     return gen_origin_path_feats(ent_emb, rel_emb, dct_triples, num_nodes, max_hop, rel_weight)
+
 
 def inter_encode(origin_path_feats):
     # after path feature fusion
@@ -51,39 +51,31 @@ def inter_encode(origin_path_feats):
 
     return mh_score
 
+
 def get_dct_triples(rel_triples):
     dct_triples = {}
     for _e1, _r, _e2 in rel_triples:
         dct_triples[(int(_e1), int(_e2))] = int(_r)
     return dct_triples
 
+
 if __name__ == '__main__':
     # KMHNet
-    ent_emb_path = os.path.join(poi_kg_emb_prefix, 'entity2vec0.txt')
-    att_emb_path = os.path.join(poi_kg_emb_prefix, 'attr2vec0.txt')
-    val_emb_path = os.path.join(poi_kg_emb_prefix, 'val2vec0.txt')
-    rel_emb_path = os.path.join(poi_kg_emb_prefix, 'relation2vec0.txt')
-    ent_rel_ent2id_path = os.path.join(poi_kg_prefix, 'ent_rel_ent2id.txt')
-    ent_att_val2id_path = os.path.join(poi_kg_prefix, 'ent_att_val2id.txt')
+    ent_emb_path = os.path.join(kg_emb_prefix, 'entity2vec0.txt')
+    att_emb_path = os.path.join(kg_emb_prefix, 'attr2vec0.txt')
+    val_emb_path = os.path.join(kg_emb_prefix, 'val2vec0.txt')
+    rel_emb_path = os.path.join(kg_emb_prefix, 'relation2vec0.txt')
 
     ent_emb = read_emb(ent_emb_path).to(device)
     att_emb = read_emb(att_emb_path).to(device)
     val_emb = read_emb(val_emb_path).to(device)
     rel_emb = read_emb(rel_emb_path).to(device)
-    rel_triples = load_triples(ent_rel_ent2id_path).to(device)
-    att_triples = load_triples(ent_att_val2id_path).to(device)
 
+    rel_triples = ent_rel_ent_list
     dct_triples = get_dct_triples(rel_triples)
-
-    # ent_emb = att_encode(ent_emb, att_emb, val_emb, att_triples)
 
     rel_weight = {k: 1 for k in dct_triples.keys()}
     origin_path_feats = rel_encode(ent_emb, rel_emb, dct_triples, rel_weight)
 
     mh_score = inter_encode(origin_path_feats)
-    # mh_score1 = rel_encode(att_ent_emb)
-    # ent_emb_path = os.path.join(data_prefix, 'entity2vec0.txt')
-    # ent_emb = read_emb(ent_emb_path)
-    # mh_score2 = rel_encode(ent_emb)
-    # mh_score = (mh_score1 + mh_score2) / 2.0
-    pd.DataFrame(mh_score.detach().cpu().numpy()).to_csv(os.path.join(mh_score_dir, 'poi_S_{}d_{}hop.csv'.format(ke_dim, max_hop)), header = False, index = False)
+    pd.DataFrame(mh_score.detach().cpu().numpy()).to_csv(os.path.join(mh_score_dir, '{}d_{}hop.csv'.format(ke_dim, max_hop)), header = False, index = False)
