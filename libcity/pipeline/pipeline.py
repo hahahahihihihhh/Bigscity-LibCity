@@ -1,4 +1,10 @@
+import copy
 import os
+import pickle
+import platform
+from datetime import time, datetime, timezone
+from dateutil import tz
+
 from ray import tune
 from ray.tune.suggest.hyperopt import HyperOptSearch
 from ray.tune.suggest.bayesopt import BayesOptSearch
@@ -11,6 +17,10 @@ import random
 from libcity.config import ConfigParser
 from libcity.data import get_dataset
 from libcity.utils import get_executor, get_model, get_logger, ensure_dir, set_random_seed
+from libcity.pipeline.embedkg_template import obatin_spatial_pickle, obatin_temporal_pickle
+from libcity.pipeline.embedkg_template import generate_spatial_kg, generate_temporal_kg
+from libcity.pipeline.embedkg_template import generate_kgsub_spat, generate_kgsub_temp_notcover
+from libcity.pipeline.embedkg_template import convert2datetime, process_temp_datetime_notcover
 from logging import getLogger
 
 
@@ -53,15 +63,111 @@ def run_model(task=None, model_name=None, dataset_name=None, config_file=None,
         exp_id, model_name, dataset_name)
     model = get_model(config, data_feature)
     executor = get_executor(config, model, data_feature)
-    # 训练
-    if train or not os.path.exists(model_cache_file):
-        executor.train(train_data, valid_data)
-        if saved_model:
-            executor.save_model(model_cache_file)
+    kg_switch = config.get("kg_switch")
+    kg_context = config.get('kg_context')
+
+    if kg_switch:
+        # obtain dictKG_spatial, dictKG_temporal
+        dictKG_spatial = obatin_spatial_pickle(config, logger)
+        dictKG_temporal = obatin_temporal_pickle(config, logger)
+        # obtan entity and rel id
+        tf_spat = generate_spatial_kg(config, logger)
+        spat_ent_label = tf_spat.entity_labeling.label_to_id
+        spat_rel_label = tf_spat.relation_labeling.label_to_id
+        tf_temp = generate_temporal_kg(config, logger)
+        temp_ent_label = tf_temp.entity_labeling.label_to_id
+        temp_rel_label = tf_temp.relation_labeling.label_to_id
+        # obtain subgraphs
+        subdict_spat = generate_kgsub_spat(config, logger, dictKG_spatial)
+        subdict_temp = {}
+        # np_goal/np_auxi: (len_time, len(self.geo_ids), feature_dim)
+        np_goal, np_auxi, spat_file, temp_file, spat_ent_kge, spat_rel_kge, temp_ent_kge, temp_rel_kge = dataset.get_kge_template()
+        subdict_spat_kge, subdict_temp_kge = {}, {}
+        # temp_pickle_file
+        temp_pickle_file = config['temp_pickle_file'].format(config.get('dataset'))
+        with open(temp_pickle_file, 'rb') as f_pickle:
+            dictKG_temporal = pickle.load(f_pickle)  # dict_dynamic {time: {id: keys: {value}}}
+        temp_datetime_list = []
+        for _dim1 in range(np_goal.shape[0]):  # len_time
+            temp_datetime = convert2datetime(np_auxi[_dim1, 0, 0:3])  # convert two parts into long_num
+            temp_datetime_list.append(temp_datetime)
+        temp_datetime_list = list(dict.fromkeys(temp_datetime_list))
+        logger.info('temp_datetime from[{}] end[{}]'.format(temp_datetime_list[0], temp_datetime_list[-1]))
+
+        # organize all data
+        dict_kge = {'dict_spat': dictKG_spatial, 'dict_temp': dictKG_temporal,  # origin dict
+                    'spat_ent_kge': spat_ent_kge, 'spat_rel_kge': spat_rel_kge,  # spat kg embedding
+                    'temp_ent_kge': temp_ent_kge, 'temp_rel_kge': temp_rel_kge,  # temp kg embedding
+                    'spat_ent_label': spat_ent_label, 'spat_rel_label': spat_rel_label,  # spat label
+                    'temp_ent_label': temp_ent_label, 'temp_rel_label': temp_rel_label,  # temp label
+                    'sub_spat': subdict_spat, 'sub_temp': subdict_temp,  # sub kg for spat and temp
+                    'sub_spat_emd': subdict_spat_kge, 'sub_temp_emd': subdict_temp_kge}  # sub embed for spat and temp
+        # integration flag
+        if config['kg_weight'] == 'add':
+            kg_weight_temp = 'add'
+            temp_kge_emd_file = kg_weight_temp + '_attr[{}]'.format(config.get('temp_attr_used')) + \
+                                '_time[{}]'.format(config.get('temp_time_attr')) + \
+                                '_link[{}]'.format(config.get('temp_link_attr'))
+        else:
+            kg_weight_temp = 'times'
+            temp_kge_emd_file = 'attr[{}]'.format(config.get('temp_attr_used')) + \
+                                '_time[{}]'.format(config.get('temp_time_attr')) + \
+                                '_link[{}]'.format(config.get('temp_link_attr'))
+        # pickle file name
+        temp_kge_emd_pickle = os.path.join('./raw_data/{}'.format(config.get('dataset')),
+                                           '{}/type_temp_kge_emd_notcover_{}.pickle'.format(temp_file,
+                                                                                            temp_kge_emd_file))
+        if platform.system() == "Windows":
+            temp_kge_emd_pickle = r'\\?\\' + os.path.abspath(temp_kge_emd_pickle)
+        if kg_context != 'spat':
+            if os.path.exists(temp_kge_emd_pickle):
+                with open(temp_kge_emd_pickle, 'rb') as f_pickle:
+                    dict_kge_part = pickle.load(f_pickle)
+                    dict_kge['sub_temp'] = copy.deepcopy(dict_kge_part['sub_temp'])
+                    dict_kge['sub_temp_emd'] = copy.deepcopy(dict_kge_part['sub_temp_emd'])
+                logger.info('[MP]Load successfully from pickle')
+            else:
+                temp_datetime_list = []
+                for _dim1 in range(np_goal.shape[0]):  # len_time
+                    temp_datetime = convert2datetime(np_auxi[_dim1, 0, 0:3])  # convert two parts into long_num
+                    temp_datetime_list.append(temp_datetime)
+                temp_datetime_list = list(dict.fromkeys(temp_datetime_list))
+                logger.info('temp_datetime from[{}] end[{}]'.format(temp_datetime_list[0], temp_datetime_list[-1]))
+                for temp_datetime in temp_datetime_list:
+                    process_temp_datetime_notcover(config, logger, temp_datetime, temp_datetime_list, np_goal, np_auxi,
+                                                   dictKG_temporal, dict_kge, kg_weight_temp)
+                    if temp_datetime.time() == time(0, 5, 0):
+                        logger.info('[Test MP Complete]:{}'.format(temp_datetime))
+                        logger.info('[Test MP Complete]:dict_kge[sub_temp][temp_datetime]-{},{}'.format(
+                            type(dict_kge['sub_temp'][temp_datetime]), len(dict_kge['sub_temp'][temp_datetime])))
+                        logger.info('[Test MP Complete]:dict_kge[sub_temp_emd][temp_datetime]-{},{}'.format(
+                            type(dict_kge['sub_temp_emd'][temp_datetime]),
+                            len(dict_kge['sub_temp_emd'][temp_datetime])))
+                dict_kge_part = {}
+                dict_kge_part['sub_temp'] = copy.deepcopy(dict_kge['sub_temp'])
+                dict_kge_part['sub_temp_emd'] = copy.deepcopy(dict_kge['sub_temp_emd'])
+                with open(temp_kge_emd_pickle, 'wb') as f_pickle:
+                    pickle.dump(dict_kge_part, f_pickle, protocol=4)
+                logger.info('[MP]Store successfully into pickle')
+                # training
+        if train or not os.path.exists(model_cache_file):
+            executor.kg_train(train_data, valid_data, dict_kge)
+            if saved_model:
+                executor.save_model(model_cache_file)
+        else:
+            executor.load_model(model_cache_file)
+            # evaluation: the result will be in the dir of cache/evaluate_cache
+        return executor.kg_evaluate(test_data, dict_kge)
     else:
-        executor.load_model(model_cache_file)
-    # 评估，评估结果将会放在 cache/evaluate_cache 下
-    return executor.evaluate(test_data)
+        # 训练
+        if train or not os.path.exists(model_cache_file):
+            executor.train(train_data, valid_data)
+            if saved_model:
+                executor.save_model(model_cache_file)
+        else:
+            executor.load_model(model_cache_file)
+        # 评估，评估结果将会放在 cache/evaluate_cache 下
+        return executor.evaluate(test_data)
 
 
 def parse_search_space(space_file):

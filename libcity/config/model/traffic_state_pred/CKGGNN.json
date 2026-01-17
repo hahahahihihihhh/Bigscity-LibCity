@@ -1,0 +1,62 @@
+{
+  "filter_type": "dual_random_walk",
+  "use_curriculum_learning": true,
+
+  "weight_decay": 0.00001,
+  "cl_decay_steps": 2000,
+  "max_diffusion_step": 2,
+  "num_rnn_layers": 2,
+  "rnn_units": 64,
+  "bidir_adj_mx": false,
+
+  "scaler": "standard",
+  "load_external": true,
+  "normal_external": false,
+  "ext_scaler": "none",
+  "add_time_in_day": true,
+  "add_day_in_week": false,
+
+  "max_epoch": 500,
+  "learner": "adam",
+  "learning_rate": 0.001,
+  "lr_decay": true,
+  "lr_scheduler": "multisteplr",
+  "lr_decay_ratio": 0.5,
+  "steps": [150, 250, 350, 450],
+  "clip_grad_norm": true,
+  "max_grad_norm": 5,
+  "use_early_stop": false,
+  "patience": 50,
+
+  "train": true,
+  "atten_type": "head",
+  "head_type": "FeaSeqPlus",
+  "head_num_seq": 10,
+  "head_num_fea": 4,
+  "fuse_method": "add",
+  "kg_weight": "times",
+
+  "spat_model_used": "ComplEx",
+  "spat_cont_used": "area-poi",
+  "spat_attr_used": "area-poi",
+  "spat_link_used": 1,
+  "spat_buffer_used": "0-0",
+  "spat_link_attr": 1,
+  "spat_buffer_attr": "0-0",
+  "spat_pickle_file": "./kg_assist/{}/CKGGNN/kg_spatial_pickle_dict.pickle",
+
+  "temp_model_used": "KG2E",
+  "temp_cont_used": "time-weather",
+  "temp_attr_used": "time-weather",
+  "temp_time_used": 1,
+  "temp_link_used": "hour-day-week",
+  "temp_time_attr": 1,
+  "temp_link_attr": "hour",
+  "temp_pickle_file": "./kg_assist/{}/CKGGNN/kg_temporal_pickle_dict.pickle",
+
+  "kg_context": "both",
+  "kg_embed_dim": 30,
+  "kg_epochs_num": 2,
+  "kg_switch": true
+
+}

@@ -127,3 +127,58 @@ def generate_dataloader_pad(train_data, eval_data, test_data, feature_name,
                                  num_workers=num_workers, collate_fn=collator,
                                  shuffle=shuffle)
     return train_dataloader, eval_dataloader, test_dataloader
+
+
+def context_data_padding(train_data, eval_data, test_data, batch_size):
+    num_padding = (batch_size - (len(train_data) % batch_size)) % batch_size
+    data_padding = np.repeat(train_data[-1:], num_padding, axis=0)
+    train_data = np.concatenate([train_data, data_padding], axis=0)
+    num_padding = (batch_size - (len(eval_data) % batch_size)) % batch_size
+    data_padding = np.repeat(eval_data[-1:], num_padding, axis=0)
+    eval_data = np.concatenate([eval_data, data_padding], axis=0)
+    num_padding = (batch_size - (len(test_data) % batch_size)) % batch_size
+    data_padding = np.repeat(test_data[-1:], num_padding, axis=0)
+    test_data = np.concatenate([test_data, data_padding], axis=0)
+    return train_data, eval_data, test_data
+
+
+def generate_dataloader_context(train_dataset, eval_dataset, test_dataset, context_feature_name,
+                                batch_size, num_workers, shuffle=True, pad_with_last_sample=False):
+    """
+    create dataloader(train/test/eval)
+
+    Args:
+        train_data(list of input): 训练数据，data 中每个元素是模型单次的输入，input 是2*n个 list，里面存放n次输入和n次target
+        eval_data(list of input): 验证数据，data 中每个元素是模型单次的输入，input 是2*n个 list，里面存放n次输入和n次target
+        test_data(list of input): 测试数据，data 中每个元素是模型单次的输入，input 是2*n个 list，里面存放n次输入和n次target
+                                  n = 1 + len(context), 最大值为4(goal, sctx, tctx, wctx)
+                                  2n最多项: (goal, target_goal, sctx, target_sctx, tctx, target_tctx, wctx, target_wctx)
+        context_feature_name(dict): 描述上面 input 每个元素对应的特征名, 应保证len(feature_name) = len(input)
+                                  (X_goal, y_goal, X_sctx, y_sctx, X_tctx, y_tctx, X_wctx, y_wctx)
+        batch_size(int): batch_size
+        num_workers(int): num_workers
+        shuffle(bool): shuffle
+
+    Returns:
+        tuple: tuple contains:
+            train_dataloader: Dataloader composed of Batch (class) \n
+            eval_dataloader: Dataloader composed of Batch (class) \n
+            test_dataloader: Dataloader composed of Batch (class)
+    """
+
+    def collator(indices):
+        batch = Batch(context_feature_name)
+        for item in indices:
+            batch.append(copy.deepcopy(item))
+        return batch
+
+    train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size,
+                                  num_workers=num_workers, collate_fn=collator,
+                                  shuffle=shuffle)
+    eval_dataloader = DataLoader(dataset=eval_dataset, batch_size=batch_size,
+                                 num_workers=num_workers, collate_fn=collator,
+                                 shuffle=shuffle)
+    test_dataloader = DataLoader(dataset=test_dataset, batch_size=batch_size,
+                                 num_workers=num_workers, collate_fn=collator,
+                                 shuffle=False)
+    return train_dataloader, eval_dataloader, test_dataloader

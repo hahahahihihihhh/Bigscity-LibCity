@@ -91,7 +91,7 @@
             "GEML", "FNN", "GSNet", "CSTN", "D2STGNN", "STID","STGODE", "STNorm", "DMSTGCN", "ESG", "SSTBAN", "STTSNet",
             "FOGS", "RGSL", "DSTAGNN", "STPGCN", "HIEST", "STAEformer", "TESTAM", "MultiSPANS", "SimST", "TimeMixer",
             "MegaCRN", "Trafformer", "STSSL", "STWave",  "PDFormer", "STGNCDE", "ASTGNN", "ASTGNNCommon", "FreTS", "STGNN",
-            "STFGNN", "KST_GCN", "KE_GWN", "KMHNet"
+            "STFGNN", "KST_GCN", "KE_GWN", "KMHNet", "CKGGNN"
         ],
         "allowed_dataset": [
             "METR_LA", "PEMS_BAY", "PEMSD3", "PEMSD4", "PEMSD7", "PEMSD8", "PEMSD7(M)",
@@ -102,7 +102,7 @@
             "ROTTERDAM", "HZMETRO", "SHMETRO", "M_DENSE", "PORTO", "NYCTAXI_DYNA",
             "NYCTAXI_OD", "NYCTAXI_GRID", "T_DRIVE_SMALL", "NYCBIKE", "AUSTINRIDE",
             "BIKEDC", "BIKECHI", "NYC_RISK", "CHICAGO_RISK", "NYCTAXI20140112_FLOW",
-            "NYCTAXI20140103"
+            "NYCTAXI20140103", "test_data"
         ],
         "STGNN": {
             "dataset_class": "TrafficStatePointDataset",
@@ -502,6 +502,11 @@
         "KMHNet": {
             "dataset_class": "TrafficStatePointDataset",
             "executor": "TrafficStateExecutor",
+            "evaluator": "TrafficStateEvaluator"
+        },
+        "CKGGNN": {
+            "dataset_class": "TrafficStateContextKGDataset",
+            "executor": "KgContextExecutorDCRNN",
             "evaluator": "TrafficStateEvaluator"
         }
     },

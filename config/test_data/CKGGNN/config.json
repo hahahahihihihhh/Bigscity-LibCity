@@ -1,0 +1,17 @@
+{
+    "task": "traffic_state_pred",
+    "model": "CKGGNN",
+    "dataset": "test_data",
+
+    "exp_id": 111,
+
+    "max_epoch": 2,
+    "batch_size": 32,
+    "patience": 15,
+    "use_early_stop": true,
+    "cache_dataset": false,
+    "input_window": 24,
+    "output_window": 3,
+    "metrics": ["masked_MAE", "masked_RMSE", "masked_MAPE"]
+
+}
