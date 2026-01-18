@@ -206,7 +206,9 @@ def ensure_dir(dir_path):
     os.makedirs(dir_path, exist_ok=True)
 
 
-def normalize(a):
-    mu=np.mean(a,axis=1,keepdims=True)
-    std=np.std(a,axis=1,keepdims=True)
-    return (a-mu)/std
+def normalize(a, eps=1e-8):
+    mu = np.mean(a, axis=1, keepdims=True)
+    std = np.std(a, axis=1, keepdims=True)
+    out = (a - mu) / np.where(std < eps, 1.0, std)  # std太小就用1避免除0
+    out = np.where(std < eps, 0.0, out)             # 常数行直接置0（可选但推荐）
+    return out

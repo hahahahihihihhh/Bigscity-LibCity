@@ -263,11 +263,9 @@ def generate_kgsub_spat(config, logger, dictKG_spatial):
         if 'area' in spat_attr_used_list:
             fact_num1 = add_factdict_list_sub(dict_kgsub, dictKG_spatial, 'area', logger)
             logger.info('[SUBKG]ADD FACT/ATTR: area with {} items'.format(fact_num1))
-            print(dict_kgsub)
         if 'poi' in spat_attr_used_list:
             fact_num2 = add_factdict_list_bufferfilter_sub(dict_kgsub, dictKG_spatial, 'poi', spat_buffer_attr, logger)
             logger.info('[SUBKG]ADD FACT/ATTR: poi with {} items'.format(fact_num2))
-            print(dict_kgsub)
         if 'land' in spat_attr_used_list:
             fact_num3 = add_factdict_list_bufferfilter_sub(dict_kgsub, dictKG_spatial, 'land', spat_buffer_attr, logger)
             logger.info('[SUBKG]ADD FACT/ATTR: land with {} items'.format(fact_num3))
@@ -362,7 +360,7 @@ def add_tempdict_fact(dictKG_temporal, datetime_list, time_used, link_used, name
                         ave_value += dictKG_temporal[_usedtime][_id][name_key]
                     if flag_time:
                         ave_value = round(ave_value / (_num+1))
-                        list_fact.append([area_id, 'has{}Ave[{}]min'.format(name_sur, str((_num+1)*10)), '{}'.format(name_sur)])
+                        list_fact.append([area_id, 'has{}Ave[{}]min'.format(name_sur, str((_num+1)*60)), '{}'.format(name_sur)])
     len_fact_timeused = len(list_fact)
 
     # linked datetime
@@ -434,7 +432,6 @@ def generate_temporal_kg(config, logger, kg_logger=True):
 
 def add_tempfact_time_sub(dict_kgsub, dictKG_temporal, temp_datetime, str_flag):
     # dictKG_temporal: {time: {id: keys: {value}}}
-    print(temp_datetime, dictKG_temporal, dictKG_temporal.get(temp_datetime))
     dictKG_id = dictKG_temporal[temp_datetime]
     total_num_attr = 0
     for _id in dictKG_id:
@@ -461,11 +458,11 @@ def add_tempdict_fact_sub(logger, dict_kgsub, dictKG_temporal, temp_datetime, ti
     if name_sur is 'jam':
         max_value, min_value = 10.0, 0.0
     if name_sur is 'tprt':
-        max_value, min_value = 40.0, 20.0
+        max_value, min_value = 19.7, -21.3   # 40.0, 20.0
     if name_sur is 'rain':
-        max_value, min_value = 20.0, 0.0
+        max_value, min_value = 7.6, 0.0    # 20.0, 0.0
     if name_sur is 'wind':
-        max_value, min_value = 30.0, 0.0
+        max_value, min_value = 63.3, 0.0    # 30.0, 0.0
 
     # current and past datetime
     time_attr_num = 0
@@ -499,7 +496,7 @@ def add_tempdict_fact_sub(logger, dict_kgsub, dictKG_temporal, temp_datetime, ti
                     ave_value += dictKG_temporal[_usedtime][_id][name_key]
                 if flag_time:
                     ave_value = (float(ave_value / float(_num+1)) - min_value) / (max_value - min_value)
-                    _new_fact = [area_id, 'has{}Ave[{}]min'.format(name_sur, str((_num+1)*10)), '{}'.format(name_sur), ave_value]
+                    _new_fact = [area_id, 'has{}Ave[{}]min'.format(name_sur, str((_num+1)*60)), '{}'.format(name_sur), ave_value]
                     dict_kgsub[area_id][name_sur].append(_new_fact)
                     time_attr_num += 1
 
@@ -543,11 +540,11 @@ def add_tempdict_fact_sub_notcover(logger, dict_kgsub, dictKG_temporal, temp_dat
     if name_sur is 'jam':
         max_value, min_value = 10.0, 0.0
     if name_sur is 'tprt':
-        max_value, min_value = 40.0, 20.0
+        max_value, min_value = 19.7, -21.3   # 40.0, 20.0
     if name_sur is 'rain':
-        max_value, min_value = 20.0, 0.0
+        max_value, min_value = 7.6, 0.0    # 20.0, 0.0
     if name_sur is 'wind':
-        max_value, min_value = 30.0, 0.0
+        max_value, min_value = 63.3, 0.0    # 30.0, 0.0
 
     # current and past datetime
     time_attr_num = 0
@@ -588,7 +585,7 @@ def add_tempdict_fact_sub_notcover(logger, dict_kgsub, dictKG_temporal, temp_dat
                         ave_value = 1.0
                     if ave_number == 0 and kg_weight_temp == 'add':  # not_cover: for add, set it as 0.0 since we need embeddings's info
                         ave_value = 0.0
-                    _new_fact = [area_id, 'has{}Ave[{}]min'.format(name_sur, str((_num+1)*10)), '{}'.format(name_sur), ave_value]
+                    _new_fact = [area_id, 'has{}Ave[{}]min'.format(name_sur, str((_num+1)*60)), '{}'.format(name_sur), ave_value]
                     dict_kgsub[area_id][name_sur].append(_new_fact)
                     time_attr_num += 1
 

@@ -175,7 +175,7 @@ class SATSkipGate(nn.Module):
         return s_out
 
 
-class STGNN(AbstractTrafficStateModel):
+class DMKG_GNN(AbstractTrafficStateModel):
     def __init__(self, config, data_feature):
         self.adj_mx = data_feature.get('adj_mx')
         self.A_sta = self.adj_mx
@@ -366,6 +366,11 @@ class STGNN(AbstractTrafficStateModel):
             # (batch_size, dilation_channels, num_nodes, receptive_field-kernel_size+1)
             gate = torch.sigmoid(gate)
             x = filter * gate
+            x_temp = x.permute(0, 2, 1, 3)
+            temporal_at = self.tAtt[i](x_temp)
+            x_tat = torch.matmul(x.reshape(x_temp.shape[0], -1, x_temp.shape[3]), temporal_at) \
+                .reshape(x_temp.shape[0], x_temp.shape[1], x_temp.shape[2], x_temp.shape[3])
+            x = x_tat.permute(0, 2, 1, 3)
             # (batch_size, dilation_channels, num_nodes, receptive_field-kernel_size+1)
             # parametrized skip connection
             s = x
@@ -373,12 +378,6 @@ class STGNN(AbstractTrafficStateModel):
             s = self.skip_convs[i](s)
             s = self.skip_gates[i](s)  # SAT-gated skip (B, C, N, T_i)
             skip_list.append(s)
-            # (batch_size, skip_channels, num_nodes, receptive_field-kernel_size+1)
-            # try:
-            #     skip = skip[:, :, :, -s.size(3):]
-            # except(Exception):
-            #     skip = 0
-            # skip = s + skip
             # (batch_size, skip_channels, num_nodes, receptive_field-kernel_size+1)
             if self.gcn_bool and self.supports is not None:
                 # (batch_size, dilation_channels, num_nodes, receptive_field-kernel_size+1)
@@ -391,11 +390,6 @@ class STGNN(AbstractTrafficStateModel):
                 # (batch_size, dilation_channels, num_nodes, receptive_field-kernel_size+1)
                 x = self.residual_convs[i](x)
                 # (batch_size, residual_channels, num_nodes, receptive_field-kernel_size+1)
-            x_temp = x.permute(0, 2, 1, 3)
-            temporal_at = self.tAtt[i](x_temp)
-            x_tat = torch.matmul(x.reshape(x_temp.shape[0], -1, x_temp.shape[3]), temporal_at) \
-                .reshape(x_temp.shape[0], x_temp.shape[1], x_temp.shape[2], x_temp.shape[3])
-            x = x_tat.permute(0, 2, 1, 3)
             # residual: (batch_size, residual_channels, num_nodes, self.receptive_field)
             x = x + residual[:, :, :, -x.size(3):]
             # (batch_size, residual_channels, num_nodes, receptive_field-kernel_size+1)

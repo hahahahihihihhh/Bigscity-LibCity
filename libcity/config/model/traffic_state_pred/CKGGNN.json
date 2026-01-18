@@ -39,9 +39,9 @@
   "spat_model_used": "ComplEx",
   "spat_cont_used": "area-poi",
   "spat_attr_used": "area-poi",
-  "spat_link_used": 1,
+  "spat_link_used": 3,
   "spat_buffer_used": "0-0",
-  "spat_link_attr": 1,
+  "spat_link_attr": 3,
   "spat_buffer_attr": "0-0",
   "spat_pickle_file": "./kg_assist/{}/CKGGNN/kg_spatial_pickle_dict.pickle",
 
@@ -51,12 +51,12 @@
   "temp_time_used": 1,
   "temp_link_used": "hour-day-week",
   "temp_time_attr": 1,
-  "temp_link_attr": "hour",
+  "temp_link_attr": "none",
   "temp_pickle_file": "./kg_assist/{}/CKGGNN/kg_temporal_pickle_dict.pickle",
 
   "kg_context": "both",
-  "kg_embed_dim": 30,
-  "kg_epochs_num": 2,
+  "kg_embed_dim": 10,
+  "kg_epochs_num": 100,
   "kg_switch": true
 
 }

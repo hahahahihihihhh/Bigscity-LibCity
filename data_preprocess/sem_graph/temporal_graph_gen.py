@@ -119,7 +119,7 @@ def temporal_graph(dtw_path):
                 lst.append((id2road[i], 'adj_temp', id2road[j]))
     tri_tg_path = os.path.join(tg_prefix, 'tri_tg_s{}.txt'.format(sparsity))
     toTxt(lst, tri_tg_path)
-    print("functional graph is generated!")
+    print("temporal graph is generated!")
 
 
 if __name__ == '__main__':

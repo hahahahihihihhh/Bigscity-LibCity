@@ -25,11 +25,11 @@ from libcity.model.traffic_speed_prediction.STAEformer import STAEformer
 from libcity.model.traffic_speed_prediction.TESTAM import TESTAM
 from libcity.model.traffic_speed_prediction.MegaCRN import MegaCRN
 from libcity.model.traffic_speed_prediction.Trafformer import Trafformer
-from libcity.model.traffic_speed_prediction.STGNN import STGNN
 from libcity.model.traffic_speed_prediction.KST_GCN import KST_GCN
 from libcity.model.traffic_speed_prediction.KE_GWN import KE_GWN
 from libcity.model.traffic_speed_prediction.KMHNet import KMHNet
 from libcity.model.traffic_speed_prediction.CKGGNN import CKGGNN
+from libcity.model.traffic_speed_prediction.DMKG_GNN import DMKG_GNN
 
 
 __all__ = [
@@ -60,9 +60,9 @@ __all__ = [
     "TESTAM",
     "MegaCRN",
     "Trafformer",
-    "STGNN",
     "KST_GCN",
     "KE_GWN",
     "KMHNet",
-    "CKGGNN"
+    "CKGGNN",
+    "DMKG_GNN"
 ]

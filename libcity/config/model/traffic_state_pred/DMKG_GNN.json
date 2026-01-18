@@ -5,7 +5,7 @@
   "apt_layer": true,
   "gcn_bool": true,
   "addaptadj": true,
-  "addfusionadj": true,
+  "addfusionadj": false,
   "adjtype": "transition",
   "bidir_adj_mx": false,
   "randomadj": true,

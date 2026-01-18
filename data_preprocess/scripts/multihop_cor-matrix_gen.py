@@ -13,15 +13,15 @@ initialize_seed(43)
 device = torch.device('cuda')
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
+dataset_cfg = settings[dataset]
+num_node = dataset_cfg["num_node"]
 cfg = settings[dataset][model]
-num_nodes = cfg["num_nodes"]
 ke_dim, max_hop = cfg['ke_dim'], cfg['max_hop']
 attn_num_layers, attn_num_heads = cfg["attn_num_layers"], cfg["attn_num_heads"]
 ent_rel_ent_list = cfg["ent_rel_ent_list"]
 key_dim, val_dim = ke_dim, ke_dim
-
-kg_emb_prefix = f"../kg/{dataset}/KR-EAR/embedding/d{ke_dim}"
-mh_score_dir = f"../../kg_assist/{dataset}/{model}"
+kg_emb_prefix = cfg["kg_emb_prefix_template"].format(ke_dim)
+mh_score_dir = cfg["mh_score_dir"]
 
 
 def att_encode(ent_emb, att_emb, val_emb, att_triples):
@@ -33,19 +33,19 @@ def att_encode(ent_emb, att_emb, val_emb, att_triples):
 
 
 def rel_encode(ent_emb, rel_emb, dct_triples, rel_weight):
-    return gen_origin_path_feats(ent_emb, rel_emb, dct_triples, num_nodes, max_hop, rel_weight)
+    return gen_origin_path_feats(ent_emb, rel_emb, dct_triples, num_node, max_hop, rel_weight)
 
 
 def inter_encode(origin_path_feats):
     # after path feature fusion
-    max_path_len, mh_feat, mh_value_mask, mh_padding_mask, i1d_to_ij2d = process_feats(origin_path_feats, ke_dim, num_nodes)  # 注意，value_mask与padding_mask的意义相反
+    max_path_len, mh_feat, mh_value_mask, mh_padding_mask, i1d_to_ij2d = process_feats(origin_path_feats, ke_dim, num_node)  # 注意，value_mask与padding_mask的意义相反
     for att_layer in range(attn_num_layers):
         mh_feat_encoder = PathAttention(embedding_dim=ke_dim, num_heads=attn_num_heads).to(device)
         att_out = mh_feat_encoder(mh_feat, mh_padding_mask)
         mh_feat = mh_feat + att_out
-    mh_score_layer = MHScoreLayer(max_path_len, ke_dim, num_nodes).to(device)
+    mh_score_layer = MHScoreLayer(max_path_len, ke_dim, num_node).to(device)
     score = mh_score_layer(mh_feat, mh_padding_mask)  # (L, 1)
-    mh_score = torch.zeros((num_nodes, num_nodes))
+    mh_score = torch.zeros((num_node, num_node))
     for i1d, (i2d, j2d) in i1d_to_ij2d.items():
         mh_score[i2d][j2d] = score[i1d]
 
@@ -78,4 +78,5 @@ if __name__ == '__main__':
     origin_path_feats = rel_encode(ent_emb, rel_emb, dct_triples, rel_weight)
 
     mh_score = inter_encode(origin_path_feats)
+    print(mh_score)
     pd.DataFrame(mh_score.detach().cpu().numpy()).to_csv(os.path.join(mh_score_dir, '{}d_{}hop.csv'.format(ke_dim, max_hop)), header = False, index = False)
