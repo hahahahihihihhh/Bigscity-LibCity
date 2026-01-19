@@ -16,5 +16,16 @@
 
 ### embedding_txt2assistCsv.py
 
-将KR-EAR模型txt形式的嵌入表示，转化为辅助csv矩阵
+将KR-EAR模型txt形式的嵌入表示，转化为辅助csv矩阵，并转移至目标位置
 
+### multihop_cormatrix_gen.py
+
+根据KR-EAR学得的嵌入表示，生成KMHNet的多跳关联矩阵并转移至目标位置
+
+### dyna2matrix.py
+
+将dyna形式的交通出入流数据改为matrix形式
+
+### aug_kg_gen.py
+
+用于构建增强知识图谱
