@@ -1,9 +1,10 @@
 {
     "task": "traffic_state_pred",
-    "model": "TGCN",
-    "dataset": "NYCTAXI20140103",
+    "model": "KST_GCN",
+    "dataset": "TDRIVE20150406",
 
-    "exp_id": 12,
+    "exp_id": 116,
+    "ke_dim": 20,
 
     "max_epoch": 500,
     "batch_size": 32,
@@ -13,5 +14,4 @@
     "input_window": 12,
     "output_window": 12,
     "metrics": ["masked_MAE", "masked_RMSE", "masked_MAPE"]
-
 }

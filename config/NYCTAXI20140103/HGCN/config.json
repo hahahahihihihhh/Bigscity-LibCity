@@ -1,9 +1,9 @@
 {
     "task": "traffic_state_pred",
-    "model": "TGCN",
+    "model": "HGCN",
     "dataset": "NYCTAXI20140103",
 
-    "exp_id": 12,
+    "exp_id": 10,
 
     "max_epoch": 500,
     "batch_size": 32,
@@ -15,3 +15,5 @@
     "metrics": ["masked_MAE", "masked_RMSE", "masked_MAPE"]
 
 }
+
+

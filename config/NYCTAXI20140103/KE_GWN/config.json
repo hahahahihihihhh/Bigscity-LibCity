@@ -1,9 +1,14 @@
 {
     "task": "traffic_state_pred",
-    "model": "TGCN",
+    "model": "KE_GWN",
     "dataset": "NYCTAXI20140103",
 
-    "exp_id": 12,
+    "exp_id": 11,
+    "load_external": false,
+    "add_time_in_day": false,
+    "struct_sparsity": 0.02,
+    "pattern_sparsity": 0.03,
+    "function_sparsity": 0.01,
 
     "max_epoch": 500,
     "batch_size": 32,

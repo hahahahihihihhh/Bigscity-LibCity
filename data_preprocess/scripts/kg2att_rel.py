@@ -30,8 +30,6 @@ scripts/kg2att_rel.py
 - 默认会对同一 (entity, attr) 的多条记录做合并：
   若 value 可转为数值 -> 求和；否则取第一个非空值。
 """
-
-import argparse
 import json
 from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
@@ -40,13 +38,18 @@ import numpy as np
 import pandas as pd
 
 
-dataset, model = "NYCTAXI20140103", "KST_GCN"
+dataset, model = "TDRIVE20150406", "KST_GCN"
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
 cfg = settings[dataset][model]
-attribute_file = cfg["attribute_file"]
-relation_file = cfg["relation_file"]
-
+attribute_file_path = cfg["attribute_file_path"]
+relation_file_path = cfg["relation_file_path"]
+krear_dir_path = cfg["krear_dir_path"]
+if model == "DMKG_GNN":
+    sparsity = cfg["sparsity"]
+    attribute_file_path = attribute_file_path.format(sparsity)
+    relation_file_path = relation_file_path.format(sparsity, sparsity)
+    krear_dir_path = krear_dir_path.format(sparsity)
 
 # -----------------------------
 # Column auto-detection helpers
@@ -143,19 +146,9 @@ def _merge_attr_duplicates(df: pd.DataFrame) -> pd.DataFrame:
 
 def main():
 
-    # Auto-detect project root: scripts/ is under project root
-    project_root = Path(__file__).resolve().parents[1]
-
-    in_dir = project_root / "raw_data" / dataset
-    att_csv = in_dir / attribute_file
-    rel_csv = in_dir / relation_file
-
-    if not att_csv.exists():
-        raise FileNotFoundError(f"att csv not found: {att_csv}")
-    if not rel_csv.exists():
-        raise FileNotFoundError(f"Adjacency csv not found: {rel_csv}")
-
-    out_dir = project_root / "kg" / dataset / "KR-EAR"
+    att_csv = attribute_file_path
+    rel_csv = relation_file_path
+    out_dir = Path(krear_dir_path)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # -----------------------------

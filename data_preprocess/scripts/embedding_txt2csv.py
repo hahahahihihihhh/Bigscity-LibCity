@@ -36,7 +36,7 @@ from typing import List, Optional, Tuple
 import numpy as np
 
 
-dataset, model = "NYCTAXI20140103", "KST_GCN"
+dataset, model = "TDRIVE20150406", "KST_GCN"
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
 cfg = settings[dataset][model]
@@ -133,7 +133,7 @@ def main():
     project_root = Path(__file__).resolve().parents[1]
     parent_project_root = Path(__file__).resolve().parents[2]
 
-    src = project_root / "kg" / dataset / "KR-EAR" / "embedding" / f"d{dim}" / "entity2vec0.txt"
+    src = project_root / "kg" / dataset / "KR-EAR" /  f"d{dim}" / "entity2vec0.txt"
 
     dst = parent_project_root / "kg_assist" / dataset / model / f"kg_embedding_d{dim}.csv"
 

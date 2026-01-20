@@ -1,9 +1,10 @@
 {
     "task": "traffic_state_pred",
-    "model": "TGCN",
-    "dataset": "NYCTAXI20140103",
+    "model": "CKGGNN",
+    "dataset": "TDRIVE20150406",
 
-    "exp_id": 12,
+    "exp_id": 118,
+    "temp_datetime": "2015-04-01T00:00:00Z",
 
     "max_epoch": 500,
     "batch_size": 32,

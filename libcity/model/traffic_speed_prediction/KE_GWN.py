@@ -89,7 +89,7 @@ class GCN(nn.Module):
         self.order = order
         self.sigmoid = torch.sigmoid
 
-    def forward(self, x, support, support2, support3):
+    def forward(self, x, support, support1, support2, support3):
         out = [x]
         for a in support:
             x1 = self.nconv(x, a)
@@ -101,6 +101,17 @@ class GCN(nn.Module):
         h = torch.cat(out, dim=1)
         h = self.mlp(h)
         # !!!
+        out1 = [x]
+        for a in support1:
+            x1 = self.nconv(x, a)
+            out1.append(x1)
+            for k in range(2, self.order + 1):
+                x2 = self.nconv(x1, a)
+                out1.append(x2)
+                x1 = x2
+        h1 = torch.cat(out1, dim=1)
+        h1 = self.sigmoid(self.mlp(h1))
+
         out2 = [x]
         for a in support2:
             x1 = self.nconv(x, a)
@@ -123,7 +134,7 @@ class GCN(nn.Module):
         h3 = torch.cat(out3, dim=1)
         h3 = self.sigmoid(self.mlp(h3))
         #
-        h = (h2 + h3) * h
+        h = (h1 + h2 + h3) * h
         h = F.dropout(h, self.dropout, training=self.training)
         return h
 
@@ -155,8 +166,9 @@ class KE_GWN(AbstractTrafficStateModel):
         self.device = config.get('device', torch.device('cpu'))
         # !!!
         self.dataset = config.get('dataset', '')
-        self.t_sparsity = config.get('t_sparsity', 0.03)
-        self.f_sparsity = config.get('f_sparsity', 0.01)
+        self.struct_sparsity = config.config.get('struct_sparsity', 0.02)
+        self.pattern_sparsity = config.get('pattern_sparsity', 0.03)
+        self.function_sparsity = config.get('function_sparsity', 0.01)
         #
         self.apt_layer = config.get('apt_layer', True)
         if self.apt_layer:
@@ -179,6 +191,7 @@ class KE_GWN(AbstractTrafficStateModel):
 
         self.cal_adj(self.adjtype)
         self.supports = [torch.tensor(i).to(self.device) for i in self.adj_mx]
+        self.supports1 = []
         self.supports2 = []
         self.supports3 = []
         if self.randomadj:
@@ -268,18 +281,23 @@ class KE_GWN(AbstractTrafficStateModel):
 
         # calculate the current adaptive adj matrix once per iteration
         new_supports = None
-        new_supports3 = None
         if self.gcn_bool and self.addaptadj and self.supports is not None:
             adp = F.softmax(F.relu(torch.mm(self.nodevec1, self.nodevec2)), dim=1)
             new_supports = self.supports + [adp]
         # !!!
-        T_adj = pd.read_csv(os.path.join("./kg_assist", "{}/KE_GWN/tg_s{}.csv".
-                                                format(self.dataset, self.t_sparsity)), header=None).values
+        S_adj = pd.read_csv(os.path.join("./kg_assist", "{}/KE_GWN/sg_s{}.csv".
+                                                format(self.dataset, self.struct_sparsity)), header=None).values
+        P_adj = pd.read_csv(os.path.join("./kg_assist", "{}/KE_GWN/pg_s{}.csv".
+                                                format(self.dataset, self.pattern_sparsity)), header=None).values
         F_adj = pd.read_csv(os.path.join("./kg_assist", "{}/KE_GWN/fg_s{}.csv".
-                                                format(self.dataset, self.f_sparsity)), header=None).values
-        T_adj = torch.from_numpy(T_adj.astype(np.float32)).to(self.device)
+                                                format(self.dataset, self.function_sparsity)), header=None).values
+        S_adj = torch.from_numpy(S_adj.astype(np.float32)).to(self.device)
+        P_adj = torch.from_numpy(P_adj.astype(np.float32)).to(self.device)
         F_adj = torch.from_numpy(F_adj.astype(np.float32)).to(self.device)
-        new_supports2 = self.supports2 + [T_adj]
+        print(S_adj.shape, P_adj.shape, F_adj.shape)
+        exit(0)
+        new_supports1 = self.supports1 + [S_adj]
+        new_supports2 = self.supports2 + [P_adj]
         new_supports3 = self.supports3 + [F_adj]
         #
 
@@ -321,9 +339,9 @@ class KE_GWN(AbstractTrafficStateModel):
             if self.gcn_bool and self.supports is not None:
                 # (batch_size, dilation_channels, num_nodes, receptive_field-kernel_size+1)
                 if self.addaptadj:
-                    x = self.gconv[i](x, new_supports, new_supports2, new_supports3)
+                    x = self.gconv[i](x, new_supports, new_supports1, new_supports2, new_supports3)
                 else:
-                    x = self.gconv[i](x, self.supports, new_supports2, new_supports3)
+                    x = self.gconv[i](x, self.supports, new_supports1, new_supports2, new_supports3)
                 # (batch_size, residual_channels, num_nodes, receptive_field-kernel_size+1)
             else:
                 # (batch_size, dilation_channels, num_nodes, receptive_field-kernel_size+1)

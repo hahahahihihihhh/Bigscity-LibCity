@@ -15,11 +15,11 @@ from libcity.utils import preprocess_data
 config = {
     'model': 'SVR',
     'kernel': 'rbf',
-    'dataset': 'NYCTAXI20140103',
+    'dataset': 'TDRIVE20150406',
     'train_rate': 0.7,
     'eval_rate': 0.1,
-    'input_window': 24,
-    'output_window': 3,
+    'input_window': 12,
+    'output_window': 12,
     # 'metrics': ['MAE', 'MAPE', 'MSE', 'RMSE', 'masked_MAE',
     #             'masked_MAPE', 'masked_MSE', 'masked_RMSE', 'R2', 'EVAR'],
     'metrics': ['masked_MAE', 'masked_RMSE', 'masked_MAPE']

@@ -3,19 +3,21 @@
     "model": "KMHNet",
     "dataset": "NYCTAXI20140103",
 
-    "exp_id": 7,
+    "exp_id": 17,
 
+    "load_external": true,
+    "add_time_in_day": true,
     "use_mh_adj": true,
     "ke_dim": 200,
     "max_hop": 2,
 
-    "max_epoch": 200,
+    "max_epoch": 500,
     "batch_size": 32,
     "patience": 15,
     "use_early_stop": true,
     "cache_dataset": false,
-    "input_window": 24,
-    "output_window": 3,
+    "input_window": 12,
+    "output_window": 12,
     "metrics": ["masked_MAE", "masked_RMSE", "masked_MAPE"]
 
 }

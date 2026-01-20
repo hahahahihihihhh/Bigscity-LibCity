@@ -19,7 +19,7 @@ from typing import Tuple, List, Optional
 import pandas as pd
 
 
-dataset, model = "NYCTAXI20140103", "KST_GCN"
+dataset, model = "TDRIVE20150406", "DMKG_GNN"
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
 dataset_cfg = settings[dataset]

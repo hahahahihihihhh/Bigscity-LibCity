@@ -55,7 +55,7 @@
   "temp_pickle_file": "./kg_assist/{}/CKGGNN/kg_temporal_pickle_dict.pickle",
 
   "kg_context": "both",
-  "kg_embed_dim": 10,
+  "kg_embed_dim": 30,
   "kg_epochs_num": 100,
   "kg_switch": true
 

@@ -3,15 +3,17 @@
     "model": "DCRNN",
     "dataset": "NYCTAXI20140103",
 
-    "exp_id": 3,
+    "exp_id": 13,
+    "load_external": false,
+    "add_time_in_day": false,
 
-    "max_epoch": 200,
+    "max_epoch": 500,
     "batch_size": 32,
     "patience": 15,
     "use_early_stop": true,
     "cache_dataset": false,
-    "input_window": 24,
-    "output_window": 3,
+    "input_window": 12,
+    "output_window": 12,
     "metrics": ["masked_MAE", "masked_RMSE", "masked_MAPE"]
 
 }

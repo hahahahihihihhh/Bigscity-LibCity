@@ -1,9 +1,9 @@
 {
     "task": "traffic_state_pred",
-    "model": "TGCN",
+    "model": "AGCRN",
     "dataset": "NYCTAXI20140103",
 
-    "exp_id": 12,
+    "exp_id": 15,
 
     "max_epoch": 500,
     "batch_size": 32,

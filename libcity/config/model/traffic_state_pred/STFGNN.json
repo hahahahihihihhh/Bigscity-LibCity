@@ -5,8 +5,8 @@
     "batch_size": 64,
     "order": 1,
     "lag": 12,
-    "period": 72,
-    "sparsity": 0.01,
+    "period": 24,
+    "sparsity": 0.02,
 
     "hidden_dims": [[64, 64, 64], [64, 64, 64], [64, 64, 64]],
     "first_layer_embedding_size": 64,
