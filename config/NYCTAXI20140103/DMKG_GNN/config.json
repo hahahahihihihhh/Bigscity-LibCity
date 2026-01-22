@@ -4,16 +4,13 @@
     "dataset": "NYCTAXI20140103",
 
     "exp_id": 19,
-    "load_external": true,
-    "add_time_in_day": true,
-    "add_day_in_week": true,
     "n_layers": 2,
     "sparsity": 0.02,
     "ke_dim": 32,
 
     "max_epoch": 500,
     "batch_size": 32,
-    "patience": 15,
+    "patience": 25,
     "use_early_stop": true,
     "cache_dataset": false,
     "input_window": 12,

@@ -11,7 +11,7 @@ import logging
 import json
 
 
-dataset_name, model_name = "NYCTAXI20140103", "DMKG_GNN"
+dataset_name, model_name = "TDRIVE20150406", "DMKG_GNN"
 log = "./logs/"
 cache = "./libcity/cache/"
 config_file = "config/{}/{}/config.json".format(dataset_name, model_name)

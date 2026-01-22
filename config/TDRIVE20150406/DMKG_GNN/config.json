@@ -4,10 +4,13 @@
     "dataset": "TDRIVE20150406",
 
     "exp_id": 119,
+    "n_layers": 2,
+    "sparsity": 0.03,
+    "ke_dim": 16,
 
     "max_epoch": 500,
     "batch_size": 32,
-    "patience": 15,
+    "patience": 25,
     "use_early_stop": true,
     "cache_dataset": false,
     "input_window": 12,
