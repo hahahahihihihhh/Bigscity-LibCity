@@ -1,15 +1,14 @@
 {
     "task": "traffic_state_pred",
-    "model": "DMKG_GNN",
-    "dataset": "NYCTAXI20140103",
+    "model": "KE_GWN",
+    "dataset": "TDRIVE20150406",
 
-    "exp_id": 19,
-    "load_external": true,
-    "add_time_in_day": true,
-    "add_day_in_week": true,
-    "n_layers": 2,
-    "sparsity": 0.02,
-    "ke_dim": 32,
+    "exp_id": 111,
+    "load_external": false,
+    "add_time_in_day": false,
+    "struct_sparsity": 0.02,
+    "pattern_sparsity": 0.03,
+    "function_sparsity": 0.01,
 
     "max_epoch": 500,
     "batch_size": 32,

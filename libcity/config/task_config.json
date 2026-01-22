@@ -505,7 +505,7 @@
             "evaluator": "TrafficStateEvaluator"
         },
         "DMKG_GNN": {
-            "dataset_class": "TrafficStatePointDataset",
+            "dataset_class": "TrafficDynamicDataset",
             "executor": "TrafficStateExecutor",
             "evaluator": "TrafficStateEvaluator"
         }

@@ -38,7 +38,7 @@ import numpy as np
 import pandas as pd
 
 
-dataset, model = "TDRIVE20150406", "KST_GCN"
+dataset, model = "TDRIVE20150406", "DMKG_GNN"
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
 cfg = settings[dataset][model]

@@ -1,3 +1,7 @@
+import math
+import os
+
+import pandas as pd
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -175,6 +179,42 @@ class SATSkipGate(nn.Module):
         return s_out
 
 
+class CrossAttnSingleHead(nn.Module):
+    def __init__(self, d_model, d_attn=32, dropout=0.0):
+        super().__init__()
+        self.Wq = nn.Linear(d_model, d_attn, bias=False)
+        self.Wk = nn.Linear(d_model, d_attn, bias=False)
+        self.Wv = nn.Linear(d_model, d_attn, bias=False)
+        self.proj = nn.Linear(d_attn, d_model, bias=False)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, V_env, X):
+        """
+        V_env: [B, T, N, D]
+        X:     [B, T, N, D]
+        return X_aug: [B, T, N, D]
+        """
+        B, T, N, D = X.shape
+
+        # 把每个时间片独立做一次注意力：把 (B,T) 合并成 batch
+        V_env_ = V_env.reshape(B*T, N, D)  # [BT, N, D]
+        X_     = X.reshape(B*T, N, D)      # [BT, N, D]
+
+        Q = self.Wq(V_env_)  # [BT, N, d_attn]
+        K = self.Wk(X_)      # [BT, N, d_attn]
+        V = self.Wv(X_)      # [BT, N, d_attn]
+
+        # Attention(Q,K,V) = softmax(QK^T / sqrt(d_attn)) V
+        scores = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(Q.size(-1))  # [BT, N, N]
+        attn = F.softmax(scores, dim=-1)
+        attn = self.dropout(attn)
+
+        out = torch.matmul(attn, V)     # [BT, N, d_attn]
+        out = self.proj(out)            # [BT, N, D]
+        X_aug = out.reshape(B, T, N, D) # [B, T, N, D]
+        return X_aug
+
+
 class DMKG_GNN(AbstractTrafficStateModel):
     def __init__(self, config, data_feature):
         self.adj_mx = data_feature.get('adj_mx')
@@ -203,7 +243,28 @@ class DMKG_GNN(AbstractTrafficStateModel):
         self.input_window = config.get('input_window', 1)
         self.output_window = config.get('output_window', 1)
         self.output_dim = self.data_feature.get('output_dim', 1)
+        self.input_dim = self.output_dim
         self.device = config.get('device', torch.device('cpu'))
+        self.actual_feature_dim = config.get('actual_feature_dim', 2)
+        self.ke_dim = config.get('ke_dim', 2)
+        self.n_layers = config.get('n_layers', 2)
+        self.sparsity = config.get('sparsity', 0.02)
+        self.dataset = config.get('dataset', '')
+        self.aug_fc = nn.Linear(self.input_dim, self.ke_dim)
+        V_sta_np  = pd.read_csv(os.path.join("./kg_assist", "{}/DMKG_GNN/{}d_s{}.csv".
+                                            format(self.dataset, self.ke_dim, self.sparsity)), header=None).values
+        V_met_np = np.load(os.path.join("./kg_assist", "{}/DMKG_GNN/{}d_l{}.npy".
+                                            format(self.dataset, self.ke_dim, self.n_layers)))
+        self.V_sta = torch.as_tensor(V_sta_np, dtype=torch.float32, device=self.device)
+        self.W_sta = nn.Parameter(torch.randn(self.ke_dim, self.ke_dim).to(self.device),
+                                             requires_grad=True).to(self.device)
+        self.V_met = torch.as_tensor(V_met_np, dtype=torch.float32, device=self.device)
+        self.W_dyn = nn.Parameter(torch.randn(self.ke_dim, self.ke_dim).to(self.device),
+                                  requires_grad=True).to(self.device)
+        self.b_sta_dyn = nn.Parameter(torch.randn(self.ke_dim).to(self.device),
+                                  requires_grad=True).to(self.device)
+        self.cross_attention = CrossAttnSingleHead(self.ke_dim)
+        self.device = torch.device(self.device)
 
         self.apt_layer = config.get('apt_layer', True)
         if self.apt_layer:
@@ -221,7 +282,7 @@ class DMKG_GNN(AbstractTrafficStateModel):
         self.skip_gates = nn.ModuleList()
         self.bn = nn.ModuleList()
         self.gconv = nn.ModuleList()
-        self.start_conv = nn.Conv2d(in_channels=self.feature_dim,
+        self.start_conv = nn.Conv2d(in_channels=self.ke_dim,
                                     out_channels=self.residual_channels,
                                     kernel_size=(1, 1))
 
@@ -311,18 +372,45 @@ class DMKG_GNN(AbstractTrafficStateModel):
         self._logger.info('receptive_field: ' + str(self.receptive_field))
 
     def forward(self, batch):
-        inputs = batch['X']  # (batch_size, input_window, num_nodes, feature_dim)
-        inputs = inputs.transpose(1, 3)  # (batch_size, feature_dim, num_nodes, input_window)
-        inputs = nn.functional.pad(inputs, (1, 0, 0, 0))  # (batch_size, feature_dim, num_nodes, input_window+1)
-
-        in_len = inputs.size(3)
+        # print(batch['X'][0].shape)
+        # print(batch['X'].shape)
+        # print(batch['X'])
+        # print(self.output_dim)
+        # exit(0)
+        # print(batch['X'][...,-1])
+        # exit(0)
+        # # exit(0)
+        inputs = batch['X'][..., :self.input_dim]  # (batch_size, input_window, num_nodes, feature_dim)
+        time_slot = batch['X'][..., 0, -1].long()
+        X = self.aug_fc(inputs)
+        V_sta = self.V_sta.unsqueeze(0).expand(inputs.shape[0], inputs.shape[1], -1, -1)
+        V_dyn = self.V_met[time_slot]
+        V_env = torch.matmul(V_sta, self.W_sta) + torch.matmul(V_dyn, self.W_dyn) + self.b_sta_dyn
+        X_aug = X + self.cross_attention(V_env, X)
+        # print(V_env.shape, X.shape)
+        # exit(0)
+        # V_env = V_sta * self.W_sta + V_dyn * self.W_dyn + self.b_sta_dyn
+        # print(V_env.shape)
+        # print(V_sta.shape, V_dyn.shape)
+        # exit(0)
+        # print(time_slot)
+        # t_idx = inputs[:, :, 0, -1].long()
+        # print(t_idx)
+        # exit(0)
+        # print(batch['X'].shape)
+        # print(self.V_met.shape)
+        # exit(0)
+        # V_dyn = self.V_met[batch['X'][..., -1]]
+        # print(V_dyn.shape)
+        # print(V_sta.shape, inputs.shape)
+        X_aug = X_aug.transpose(1, 3)  # (batch_size, feature_dim, num_nodes, input_window)
+        X_aug = nn.functional.pad(X_aug, (1, 0, 0, 0))  # (batch_size, feature_dim, num_nodes, input_window+1)
+        in_len = X_aug.size(3)
         if in_len < self.receptive_field:
-            x = nn.functional.pad(inputs, (self.receptive_field - in_len, 0, 0, 0))
+            x = nn.functional.pad(X_aug, (self.receptive_field - in_len, 0, 0, 0))
         else:
-            x = inputs
+            x = X_aug
         x = self.start_conv(x)  # (batch_size, residual_channels, num_nodes, self.receptive_field)
-        skip = 0
-
         # calculate the current adaptive adj matrix once per iteration
         new_supports = None
         if self.gcn_bool and self.addaptadj and self.supports is not None:

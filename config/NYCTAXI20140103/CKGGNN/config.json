@@ -1,11 +1,12 @@
 {
     "task": "traffic_state_pred",
-    "model": "DCRNN",
+    "model": "CKGGNN",
     "dataset": "NYCTAXI20140103",
 
     "exp_id": 18,
     "temp_datetime": "2014-01-01T00:00:00Z",
-    "kg_embed_dim": 10,
+    "n_layers": "",
+    "n_hidden": "",
 
     "max_epoch": 500,
     "batch_size": 32,

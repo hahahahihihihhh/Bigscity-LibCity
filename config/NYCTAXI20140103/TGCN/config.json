@@ -5,10 +5,8 @@
 
     "exp_id": 12,
 
-    "max_epoch": 500,
-    "batch_size": 32,
-    "patience": 15,
-    "use_early_stop": true,
+    "max_epoch": 5000,
+    "use_early_stop": false,
     "cache_dataset": false,
     "input_window": 12,
     "output_window": 12,

@@ -294,8 +294,6 @@ class KE_GWN(AbstractTrafficStateModel):
         S_adj = torch.from_numpy(S_adj.astype(np.float32)).to(self.device)
         P_adj = torch.from_numpy(P_adj.astype(np.float32)).to(self.device)
         F_adj = torch.from_numpy(F_adj.astype(np.float32)).to(self.device)
-        print(S_adj.shape, P_adj.shape, F_adj.shape)
-        exit(0)
         new_supports1 = self.supports1 + [S_adj]
         new_supports2 = self.supports2 + [P_adj]
         new_supports3 = self.supports3 + [F_adj]

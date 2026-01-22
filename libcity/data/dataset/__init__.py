@@ -10,6 +10,7 @@ from libcity.data.dataset.eta_dataset import ETADataset
 from libcity.data.dataset.map_matching_dataset import MapMatchingDataset
 from libcity.data.dataset.roadnetwork_dataset import RoadNetWorkDataset
 from libcity.data.dataset.traffic_state_contextkg_dataset import TrafficStateContextKGDataset
+from libcity.data.dataset.traffic_state_dmkg_dataset import TrafficDynamicDataset
 
 
 __all__ = [
@@ -24,5 +25,6 @@ __all__ = [
     "ETADataset",
     "MapMatchingDataset",
     "RoadNetWorkDataset",
-    "TrafficStateContextKGDataset"
+    "TrafficStateContextKGDataset",
+    "TrafficDynamicDataset"
 ]

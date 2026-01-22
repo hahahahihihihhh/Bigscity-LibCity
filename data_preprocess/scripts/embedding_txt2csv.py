@@ -36,11 +36,13 @@ from typing import List, Optional, Tuple
 import numpy as np
 
 
-dataset, model = "TDRIVE20150406", "KST_GCN"
+dataset, model = "TDRIVE20150406", "DMKG_GNN"
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
 cfg = settings[dataset][model]
 dim = cfg["ke_dim"]
+if model == "DMKG_GNN":
+    sparsity = cfg["sparsity"]
 
 
 def _is_int_token(s: str) -> bool:
@@ -133,9 +135,15 @@ def main():
     project_root = Path(__file__).resolve().parents[1]
     parent_project_root = Path(__file__).resolve().parents[2]
 
-    src = project_root / "kg" / dataset / "KR-EAR" /  f"d{dim}" / "entity2vec0.txt"
+    if model == "DMKG_GNN":
+        src = project_root / "kg" / dataset / f"aug_kg_s{sparsity}" / "KR-EAR" /  f"d{dim}" / "entity2vec0.txt"
+    else:
+        src = project_root / "kg" / dataset / "kg" / "KR-EAR" / f"d{dim}" / "entity2vec0.txt"
 
-    dst = parent_project_root / "kg_assist" / dataset / model / f"kg_embedding_d{dim}.csv"
+    if model == "DMKG_GNN":
+        dst = parent_project_root / "kg_assist" / dataset / model / f"{dim}d_s{sparsity}.csv"
+    else:
+        dst = parent_project_root / "kg_assist" / dataset / model / f"kg_embedding_d{dim}.csv"
 
     ids, mat = read_embedding_txt(src)
     write_csv(dst, ids, mat)
