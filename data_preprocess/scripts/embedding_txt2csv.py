@@ -141,7 +141,7 @@ def main():
         src = project_root / "kg" / dataset / "kg" / "KR-EAR" / f"d{dim}" / "entity2vec0.txt"
 
     if model == "DMKG_GNN":
-        dst = parent_project_root / "kg_assist" / dataset / model / f"{dim}d_s{sparsity}.csv"
+        dst = parent_project_root / "kg_assist" / dataset / model / f"d{dim}_s{sparsity}.csv"
     else:
         dst = parent_project_root / "kg_assist" / dataset / model / f"kg_embedding_d{dim}.csv"
 

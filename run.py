@@ -23,7 +23,9 @@ def train(config, total = 1):
 
     # dir_name = "v1_2/"
     dir_name = ""
-
+    if model_name == "DMKG_GNN":
+        ke_dim, sparsity, n_layers = config['ke_dim'], config['sparsity'], config['n_layers']
+        dir_name += 'd{}_s{}_l{}'.format(ke_dim, sparsity, n_layers)
     # if config.get('use_mh_adj', False):
     #     dir_name += '{}d_{}hop_s{}_b{}'.format(config['ke_dim'], config['max_hop'], config['sparsity'], config['batch_size'])
     save_dir = os.path.join(save_dir, dir_name)

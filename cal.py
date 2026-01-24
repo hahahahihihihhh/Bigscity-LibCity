@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 
-eval_prefix = './logs/NYCTAXI20140103/KE_GWN/day_in_week'
+eval_prefix = './logs/TDRIVE20150406/DMKG_GNN/d16_s0.04_l2'
 eval_path = os.path.join(eval_prefix, 'avg_result.csv')
 # eval_path = './test/SVR_SZ_TAXI_metrics_poly.csv'
 # final_eval_file = 'KMHNet_eval.csv'

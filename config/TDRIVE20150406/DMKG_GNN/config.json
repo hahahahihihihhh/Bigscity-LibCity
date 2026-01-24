@@ -5,12 +5,15 @@
 
     "exp_id": 119,
     "n_layers": 2,
-    "sparsity": 0.03,
+    "sparsity": 0.01,
     "ke_dim": 16,
+    "load_external": true,
+    "add_time_in_day": true,
+    "add_day_in_week": true,
 
     "max_epoch": 500,
     "batch_size": 32,
-    "patience": 25,
+    "patience": 15,
     "use_early_stop": true,
     "cache_dataset": false,
     "input_window": 12,

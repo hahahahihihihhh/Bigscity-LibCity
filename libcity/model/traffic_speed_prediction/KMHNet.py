@@ -189,7 +189,7 @@ class KMHNet(AbstractTrafficStateModel):
 
         # !!!
         if self.use_mh_adj:
-            mh_score = pd.read_csv(os.path.join("./kg_assist", "{}/KMHNet/{}d_{}hop.csv".
+            mh_score = pd.read_csv(os.path.join("./kg_assist", "{}/KMHNet/d{}_hop{}.csv".
                                                     format(self.dataset, self.ke_dim, self.max_hop)), header=None).values
             mh_score = torch.from_numpy(mh_score.astype(np.float32)).to(self.device)
             self.supports += [mh_score]

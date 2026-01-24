@@ -250,10 +250,11 @@ class DMKG_GNN(AbstractTrafficStateModel):
         self.n_layers = config.get('n_layers', 2)
         self.sparsity = config.get('sparsity', 0.02)
         self.dataset = config.get('dataset', '')
-        self.aug_fc = nn.Linear(self.input_dim, self.ke_dim)
-        V_sta_np  = pd.read_csv(os.path.join("./kg_assist", "{}/DMKG_GNN/{}d_s{}.csv".
+        self.aug_fc = nn.Linear(self.feature_dim - 1, self.ke_dim)
+        self.alpha = nn.Parameter(torch.tensor(0.0))
+        V_sta_np  = pd.read_csv(os.path.join("./kg_assist", "{}/DMKG_GNN/d{}_s{}.csv".
                                             format(self.dataset, self.ke_dim, self.sparsity)), header=None).values
-        V_met_np = np.load(os.path.join("./kg_assist", "{}/DMKG_GNN/{}d_l{}.npy".
+        V_met_np = np.load(os.path.join("./kg_assist", "{}/DMKG_GNN/d{}_l{}.npy".
                                             format(self.dataset, self.ke_dim, self.n_layers)))
         self.V_sta = torch.as_tensor(V_sta_np, dtype=torch.float32, device=self.device)
         self.W_sta = nn.Parameter(torch.randn(self.ke_dim, self.ke_dim).to(self.device),
@@ -380,13 +381,13 @@ class DMKG_GNN(AbstractTrafficStateModel):
         # print(batch['X'][...,-1])
         # exit(0)
         # # exit(0)
-        inputs = batch['X'][..., :self.input_dim]  # (batch_size, input_window, num_nodes, feature_dim)
+        inputs = batch['X'][..., :-1]  # (batch_size, input_window, num_nodes, feature_dim)
         time_slot = batch['X'][..., 0, -1].long()
         X = self.aug_fc(inputs)
         V_sta = self.V_sta.unsqueeze(0).expand(inputs.shape[0], inputs.shape[1], -1, -1)
         V_dyn = self.V_met[time_slot]
         V_env = torch.matmul(V_sta, self.W_sta) + torch.matmul(V_dyn, self.W_dyn) + self.b_sta_dyn
-        X_aug = X + self.cross_attention(V_env, X)
+        X_aug = X + self.alpha * self.cross_attention(V_env, X)
         # print(V_env.shape, X.shape)
         # exit(0)
         # V_env = V_sta * self.W_sta + V_dyn * self.W_dyn + self.b_sta_dyn

@@ -116,8 +116,8 @@
     },
 
     "DMKG_GNN": {
-      "sparsity": 0.03,
-      "ke_dim": 16,
+      "sparsity": 0.04,
+      "ke_dim": 32,
       "attribute_file_path": "../kg/TDRIVE20150406/aug_kg_s{}/poi_kg.csv",
       "relation_file_path": "../kg/TDRIVE20150406/aug_kg_s{}/sem_kg_s{}.csv",
       "krear_dir_path": "../kg/TDRIVE20150406/aug_kg_s{}/KR-EAR",

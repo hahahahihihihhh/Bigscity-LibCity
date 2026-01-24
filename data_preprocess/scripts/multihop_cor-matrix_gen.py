@@ -80,4 +80,4 @@ if __name__ == '__main__':
     mh_score = inter_encode(origin_path_feats)
     print(mh_score)
     ensure_dir(mh_score_dir)
-    pd.DataFrame(mh_score.detach().cpu().numpy()).to_csv(os.path.join(mh_score_dir, '{}d_{}hop.csv'.format(ke_dim, max_hop)), header = False, index = False)
+    pd.DataFrame(mh_score.detach().cpu().numpy()).to_csv(os.path.join(mh_score_dir, 'd{}_hop{}.csv'.format(ke_dim, max_hop)), header = False, index = False)

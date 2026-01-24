@@ -7,6 +7,9 @@
     "n_layers": 2,
     "sparsity": 0.02,
     "ke_dim": 32,
+    "load_external": true,
+    "add_time_in_day": true,
+    "add_day_in_week": true,
 
     "max_epoch": 500,
     "batch_size": 32,
