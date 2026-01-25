@@ -11,7 +11,7 @@ from libcity.data_preprocess.utils.utils import read_emb, initialize_seed, ensur
 from libcity.data_preprocess.utils.graph_gen import struct_graph_gen, function_graph_gen, pattern_graph_gen
 
 
-dataset, model = "TDRIVE20150406", "DMKG_GNN"
+dataset, model = "NYCTAXI20140103", "DMKG_GNN"
 initialize_seed(43)
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)

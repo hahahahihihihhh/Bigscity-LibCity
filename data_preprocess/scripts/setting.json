@@ -26,7 +26,7 @@
     },
 
     "KST_GCN": {
-      "ke_dim": 128,
+      "ke_dim": 8,
       "attribute_file_path": "../raw_data/NYCTAXI20140103/poi_kg.csv",
       "relation_file_path": "../raw_data/NYCTAXI20140103/adj_kg.csv",
       "krear_dir_path": "../kg/NYCTAXI20140103/kg/KR-EAR"
@@ -44,8 +44,8 @@
     },
 
     "DMKG_GNN": {
-      "sparsity": 0.02,
-      "ke_dim": 32,
+      "sparsity": 0.03,
+      "ke_dim": 40,
       "attribute_file_path": "../kg/NYCTAXI20140103/aug_kg_s{}/poi_kg.csv",
       "relation_file_path": "../kg/NYCTAXI20140103/aug_kg_s{}/sem_kg_s{}.csv",
       "krear_dir_path": "../kg/NYCTAXI20140103/aug_kg_s{}/KR-EAR",
@@ -116,8 +116,8 @@
     },
 
     "DMKG_GNN": {
-      "sparsity": 0.04,
-      "ke_dim": 32,
+      "sparsity": 0.02,
+      "ke_dim": 40,
       "attribute_file_path": "../kg/TDRIVE20150406/aug_kg_s{}/poi_kg.csv",
       "relation_file_path": "../kg/TDRIVE20150406/aug_kg_s{}/sem_kg_s{}.csv",
       "krear_dir_path": "../kg/TDRIVE20150406/aug_kg_s{}/KR-EAR",

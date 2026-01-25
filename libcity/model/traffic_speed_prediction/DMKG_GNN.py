@@ -223,6 +223,13 @@ class DMKG_GNN(AbstractTrafficStateModel):
         self.feature_dim = data_feature.get('feature_dim', 2)
         super().__init__(config, data_feature)
 
+        self.without_spatial_enhanced_KG = config.get('without_spatial_enhanced_KG', False)
+        self.without_dynamic_meteorological_KG = config.get('without_dynamic_meteorological_KG', False)
+        self.without_spatial_enhanced = config.get('without_spatial_enhanced', False)
+        self.without_attribute_enhanced = config.get('without_attribute_enhanced', False)
+        self.without_time_attention = config.get('without_time_attention', False)
+        self.without_adaptive_skip_connection = config.get('without_adaptive_skip_connection', False)
+
         self.eps = config.get('eps', 1e-3)
         self.dropout = config.get('dropout', 0.3)
         self.blocks = config.get('blocks', 4)
@@ -252,10 +259,18 @@ class DMKG_GNN(AbstractTrafficStateModel):
         self.dataset = config.get('dataset', '')
         self.aug_fc = nn.Linear(self.feature_dim - 1, self.ke_dim)
         self.alpha = nn.Parameter(torch.tensor(0.0))
-        V_sta_np  = pd.read_csv(os.path.join("./kg_assist", "{}/DMKG_GNN/d{}_s{}.csv".
+        if not self.without_spatial_enhanced:
+            V_sta_np = pd.read_csv(os.path.join("./kg_assist", "{}/DMKG_GNN/d{}_s{}.csv".
                                             format(self.dataset, self.ke_dim, self.sparsity)), header=None).values
-        V_met_np = np.load(os.path.join("./kg_assist", "{}/DMKG_GNN/d{}_l{}.npy".
+        else:
+            V_sta_np = pd.read_csv(os.path.join("./kg_assist", "{}/DMKG_GNN/d{}.csv".
+                                            format(self.dataset, self.ke_dim)), header=None).values
+        if self.without_attribute_enhanced:
+            V_met_np = np.load(os.path.join("./kg_assist", "{}/DMKG_GNN/d{}_l{}_regcn.npy".
                                             format(self.dataset, self.ke_dim, self.n_layers)))
+        else:
+            V_met_np = np.load(os.path.join("./kg_assist", "{}/DMKG_GNN/d{}_l{}.npy".
+                                                format(self.dataset, self.ke_dim, self.n_layers)))
         self.V_sta = torch.as_tensor(V_sta_np, dtype=torch.float32, device=self.device)
         self.W_sta = nn.Parameter(torch.randn(self.ke_dim, self.ke_dim).to(self.device),
                                              requires_grad=True).to(self.device)
@@ -386,7 +401,12 @@ class DMKG_GNN(AbstractTrafficStateModel):
         X = self.aug_fc(inputs)
         V_sta = self.V_sta.unsqueeze(0).expand(inputs.shape[0], inputs.shape[1], -1, -1)
         V_dyn = self.V_met[time_slot]
-        V_env = torch.matmul(V_sta, self.W_sta) + torch.matmul(V_dyn, self.W_dyn) + self.b_sta_dyn
+        if self.without_dynamic_meteorological_KG:
+            V_env = V_sta
+        elif self.without_spatial_enhanced_KG:
+            V_env = V_dyn
+        else:
+            V_env = torch.matmul(V_sta, self.W_sta) + torch.matmul(V_dyn, self.W_dyn) + self.b_sta_dyn
         X_aug = X + self.alpha * self.cross_attention(V_env, X)
         # print(V_env.shape, X.shape)
         # exit(0)
@@ -432,6 +452,7 @@ class DMKG_GNN(AbstractTrafficStateModel):
             else:
                 new_supports = self.supports + [A_adp]
         skip_list = []
+        skip = 0
         # WaveNet layers
         for i in range(self.blocks * self.layers):
 
@@ -455,18 +476,26 @@ class DMKG_GNN(AbstractTrafficStateModel):
             # (batch_size, dilation_channels, num_nodes, receptive_field-kernel_size+1)
             gate = torch.sigmoid(gate)
             x = filter * gate
-            x_temp = x.permute(0, 2, 1, 3)
-            temporal_at = self.tAtt[i](x_temp)
-            x_tat = torch.matmul(x.reshape(x_temp.shape[0], -1, x_temp.shape[3]), temporal_at) \
-                .reshape(x_temp.shape[0], x_temp.shape[1], x_temp.shape[2], x_temp.shape[3])
-            x = x_tat.permute(0, 2, 1, 3)
+            if not self.without_time_attention:
+                x_temp = x.permute(0, 2, 1, 3)
+                temporal_at = self.tAtt[i](x_temp)
+                x_tat = torch.matmul(x.reshape(x_temp.shape[0], -1, x_temp.shape[3]), temporal_at) \
+                    .reshape(x_temp.shape[0], x_temp.shape[1], x_temp.shape[2], x_temp.shape[3])
+                x = x_tat.permute(0, 2, 1, 3)
             # (batch_size, dilation_channels, num_nodes, receptive_field-kernel_size+1)
             # parametrized skip connection
             s = x
             # (batch_size, dilation_channels, num_nodes, receptive_field-kernel_size+1)
             s = self.skip_convs[i](s)
-            s = self.skip_gates[i](s)  # SAT-gated skip (B, C, N, T_i)
-            skip_list.append(s)
+            if self.without_adaptive_skip_connection:
+                try:
+                    skip = skip[:, :, :, -s.size(3):]
+                except(Exception):
+                    skip = 0
+                skip = s + skip
+            else:
+                s = self.skip_gates[i](s)  # SAT-gated skip (B, C, N, T_i)
+                skip_list.append(s)
             # (batch_size, skip_channels, num_nodes, receptive_field-kernel_size+1)
             if self.gcn_bool and self.supports is not None:
                 # (batch_size, dilation_channels, num_nodes, receptive_field-kernel_size+1)
@@ -485,14 +514,14 @@ class DMKG_GNN(AbstractTrafficStateModel):
             x = self.bn[i](x)
         # ---- Weighted SAT Skip Aggregation ----
         # Align all skip tensors to the same temporal length (use the smallest T)
-        min_t = min(s.size(3) for s in skip_list)
-        skip_list = [s[:, :, :, -min_t:] for s in skip_list]
-        # Layer-wise weights (softmax) -> (L,)
-        w = torch.softmax(self.skip_alpha, dim=0)
-        # Weighted sum
-        skip = 0.0
-        for i, s in enumerate(skip_list):
-            skip = skip + w[i] * s
+        if not self.without_adaptive_skip_connection:
+            min_t = min(s.size(3) for s in skip_list)
+            skip_list = [s[:, :, :, -min_t:] for s in skip_list]
+            # Layer-wise weights (softmax) -> (L,)
+            w = torch.softmax(self.skip_alpha, dim=0)
+            # Weighted sum
+            for i, s in enumerate(skip_list):
+                skip = skip + w[i] * s
         x = F.relu(skip)
         # (batch_size, skip_channels, num_nodes, self.output_dim)
         x = F.relu(self.end_conv_1(x))
