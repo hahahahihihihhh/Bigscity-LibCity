@@ -4,12 +4,14 @@
     "dataset": "TDRIVE20150406",
 
     "exp_id": 119,
-    "n_layers": 2,
-    "sparsity": 0.01,
+    "n_layers": 3,
+    "sparsity": 0.02,
     "ke_dim": 16,
     "load_external": true,
     "add_time_in_day": true,
     "add_day_in_week": true,
+
+    "without_adaptive_skip_connection": true,
 
     "max_epoch": 500,
     "batch_size": 32,

@@ -11,7 +11,7 @@ import logging
 import json
 
 
-dataset_name, model_name = "SZ_TAXI", "DMKG_GNN"
+dataset_name, model_name = "TDRIVE20150406", "DMKG_GNN"
 log = "./logs/"
 cache = "./libcity/cache/"
 config_file = "config/{}/{}/config.json".format(dataset_name, model_name)
@@ -29,18 +29,18 @@ def train(config, total = 1):
             dir_name += 'd{}_s{}'.format(ke_dim, sparsity)
         else:
             dir_name += 'd{}_s{}_l{}'.format(ke_dim, sparsity, n_layers)
-        if config.get("without_spatial_enhanced_KG"):
-            dir_name += "_without_spatial_enhanced_KG"
-        if config.get("without_dynamic_meteorological_KG"):
-            dir_name += "_without_dynamic_meteorological_KG"
-        if config.get("without_spatial_enhanced"):
-            dir_name += "_without_spatial_enhanced"
-        if config.get("without_attribute_enhanced"):
-            dir_name += "_without_attribute_enhanced"
-        if config.get("without_state_propagation"):
-            dir_name += "_without_state_propagation"
-        if config.get("without_time_attention"):
-            dir_name += "_without_time_attention"
+            if config.get("without_spatial_enhanced_KG"):
+                dir_name += "_without_spatial_enhanced_KG"
+            if config.get("without_dynamic_meteorological_KG"):
+                dir_name += "_without_dynamic_meteorological_KG"
+            if config.get("without_spatial_enhanced"):
+                dir_name += "_without_spatial_enhanced"
+            if config.get("without_attribute_enhanced"):
+                dir_name += "_without_attribute_enhanced"
+            if config.get("without_state_propagation"):
+                dir_name += "_without_state_propagation"
+            if config.get("without_time_attention"):
+                dir_name += "_without_time_attention"
     # if config.get('use_mh_adj', False):
     #     dir_name += '{}d_{}hop_s{}_b{}'.format(config['ke_dim'], config['max_hop'], config['sparsity'], config['batch_size'])
     save_dir = os.path.join(save_dir, dir_name)
