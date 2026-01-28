@@ -29,3 +29,6 @@
 ### aug_kg_gen.py
 
 用于构建增强知识图谱
+
+### multihop_cor-matrix_gen.py
+用于生成KMHNet的多跳矩阵

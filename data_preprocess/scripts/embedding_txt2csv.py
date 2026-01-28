@@ -36,7 +36,7 @@ from typing import List, Optional, Tuple
 import numpy as np
 
 
-dataset, model = "NYCTAXI20140103", "KST_GCN"
+dataset, model = "SZ_TAXI", "DMKG_GNN"
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
 cfg = settings[dataset][model]

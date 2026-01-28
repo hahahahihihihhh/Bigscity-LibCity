@@ -227,6 +227,7 @@ class DMKG_GNN(AbstractTrafficStateModel):
         self.without_dynamic_meteorological_KG = config.get('without_dynamic_meteorological_KG', False)
         self.without_spatial_enhanced = config.get('without_spatial_enhanced', False)
         self.without_attribute_enhanced = config.get('without_attribute_enhanced', False)
+        self.without_state_propagation = config.get('without_state_propagation', False)
         self.without_time_attention = config.get('without_time_attention', False)
         self.without_adaptive_skip_connection = config.get('without_adaptive_skip_connection', False)
 
@@ -265,16 +266,18 @@ class DMKG_GNN(AbstractTrafficStateModel):
         else:
             V_sta_np = pd.read_csv(os.path.join("./kg_assist", "{}/DMKG_GNN/d{}.csv".
                                             format(self.dataset, self.ke_dim)), header=None).values
-        if self.without_attribute_enhanced:
-            V_met_np = np.load(os.path.join("./kg_assist", "{}/DMKG_GNN/d{}_l{}_regcn.npy".
-                                            format(self.dataset, self.ke_dim, self.n_layers)))
-        else:
-            V_met_np = np.load(os.path.join("./kg_assist", "{}/DMKG_GNN/d{}_l{}.npy".
+        if not self.without_dynamic_meteorological_KG:
+            if self.without_attribute_enhanced:
+                V_met_np = np.load(os.path.join("./kg_assist", "{}/DMKG_GNN/d{}_l{}_regcn.npy".
+                                                format(self.dataset, self.ke_dim, self.n_layers)))
+            if self.without_state_propagation:
+                V_met_np = np.load(os.path.join("./kg_assist", "{}/DMKG_GNN/d{}_l{}_without_state_propagation.npy".
                                                 format(self.dataset, self.ke_dim, self.n_layers)))
         self.V_sta = torch.as_tensor(V_sta_np, dtype=torch.float32, device=self.device)
         self.W_sta = nn.Parameter(torch.randn(self.ke_dim, self.ke_dim).to(self.device),
                                              requires_grad=True).to(self.device)
-        self.V_met = torch.as_tensor(V_met_np, dtype=torch.float32, device=self.device)
+        if not self.without_dynamic_meteorological_KG:
+            self.V_met = torch.as_tensor(V_met_np, dtype=torch.float32, device=self.device)
         self.W_dyn = nn.Parameter(torch.randn(self.ke_dim, self.ke_dim).to(self.device),
                                   requires_grad=True).to(self.device)
         self.b_sta_dyn = nn.Parameter(torch.randn(self.ke_dim).to(self.device),
@@ -400,12 +403,13 @@ class DMKG_GNN(AbstractTrafficStateModel):
         time_slot = batch['X'][..., 0, -1].long()
         X = self.aug_fc(inputs)
         V_sta = self.V_sta.unsqueeze(0).expand(inputs.shape[0], inputs.shape[1], -1, -1)
-        V_dyn = self.V_met[time_slot]
         if self.without_dynamic_meteorological_KG:
             V_env = V_sta
         elif self.without_spatial_enhanced_KG:
+            V_dyn = self.V_met[time_slot]
             V_env = V_dyn
         else:
+            V_dyn = self.V_met[time_slot]
             V_env = torch.matmul(V_sta, self.W_sta) + torch.matmul(V_dyn, self.W_dyn) + self.b_sta_dyn
         X_aug = X + self.alpha * self.cross_attention(V_env, X)
         # print(V_env.shape, X.shape)
