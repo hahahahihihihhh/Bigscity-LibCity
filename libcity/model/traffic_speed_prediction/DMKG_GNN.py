@@ -270,8 +270,11 @@ class DMKG_GNN(AbstractTrafficStateModel):
             if self.without_attribute_enhanced:
                 V_met_np = np.load(os.path.join("./kg_assist", "{}/DMKG_GNN/d{}_l{}_regcn.npy".
                                                 format(self.dataset, self.ke_dim, self.n_layers)))
-            if self.without_state_propagation:
+            elif self.without_state_propagation:
                 V_met_np = np.load(os.path.join("./kg_assist", "{}/DMKG_GNN/d{}_l{}_without_state_propagation.npy".
+                                                format(self.dataset, self.ke_dim, self.n_layers)))
+            else:
+                V_met_np = np.load(os.path.join("./kg_assist", "{}/DMKG_GNN/d{}_l{}.npy".
                                                 format(self.dataset, self.ke_dim, self.n_layers)))
         self.V_sta = torch.as_tensor(V_sta_np, dtype=torch.float32, device=self.device)
         self.W_sta = nn.Parameter(torch.randn(self.ke_dim, self.ke_dim).to(self.device),

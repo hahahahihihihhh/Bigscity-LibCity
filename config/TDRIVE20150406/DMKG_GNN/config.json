@@ -6,7 +6,7 @@
     "exp_id": 119,
     "n_layers": 3,
     "sparsity": 0.02,
-    "ke_dim": 16,
+    "ke_dim": 24,
     "load_external": true,
     "add_time_in_day": true,
     "add_day_in_week": true,
