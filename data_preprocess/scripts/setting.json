@@ -44,11 +44,18 @@
     },
 
     "DMKG_GNN": {
-      "sparsity": 0.03,
+      "sparsity": 0.04,
       "ke_dim": 40,
-      "attribute_file_path": "../kg/NYCTAXI20140103/aug_kg_s{}/poi_kg.csv",
-      "relation_file_path": "../kg/NYCTAXI20140103/aug_kg_s{}/sem_kg_s{}.csv",
-      "krear_dir_path": "../kg/NYCTAXI20140103/aug_kg_s{}/KR-EAR",
+      "poi_STF": {
+        "attribute_file_path": "../kg/NYCTAXI20140103/aug_kg_s{}/poi_kg.csv",
+        "relation_file_path": "../kg/NYCTAXI20140103/aug_kg_s{}/sem_kg_s{}.csv",
+        "krear_dir_path": "../kg/NYCTAXI20140103/aug_kg_s{}/KR-EAR"
+      },
+      "poi": {
+        "attribute_file_path": "../kg/NYCTAXI20140103/poi_kg/poi_kg.csv",
+        "relation_file_path": "../kg/NYCTAXI20140103/poi_kg/sem_kg.csv",
+        "krear_dir_path": "../kg/NYCTAXI20140103/poi_kg/KR-EAR"
+      },
       "struct_graph": {},
       "pattern_graph": {
         "period": 168
@@ -116,11 +123,18 @@
     },
 
     "DMKG_GNN": {
-      "sparsity": 0.02,
+      "sparsity": 0.04,
       "ke_dim": 40,
-      "attribute_file_path": "../kg/TDRIVE20150406/aug_kg_s{}/poi_kg.csv",
-      "relation_file_path": "../kg/TDRIVE20150406/aug_kg_s{}/sem_kg_s{}.csv",
-      "krear_dir_path": "../kg/TDRIVE20150406/aug_kg_s{}/KR-EAR",
+      "poi_STF": {
+        "attribute_file_path": "../kg/TDRIVE20150406/aug_kg_s{}/poi_kg.csv",
+        "relation_file_path": "../kg/TDRIVE20150406/aug_kg_s{}/sem_kg_s{}.csv",
+        "krear_dir_path": "../kg/TDRIVE20150406/aug_kg_s{}/KR-EAR"
+      },
+      "poi": {
+        "attribute_file_path": "../kg/TDRIVE20150406/poi_kg/poi_kg.csv",
+        "relation_file_path": "../kg/TDRIVE20150406/poi_kg/sem_kg.csv",
+        "krear_dir_path": "../kg/TDRIVE20150406/poi_kg/KR-EAR"
+      },
       "struct_graph": {},
       "pattern_graph": {
         "period": 168

@@ -43,7 +43,7 @@ def toDict(lst):
     return dct
 
 
-def load_dict(data_path):
+def load2dict(data_path):
     dct = {}
     with open(data_path, 'r') as f:
         for _line in f.readlines():
@@ -52,13 +52,21 @@ def load_dict(data_path):
     return dct
 
 
-def load_txt(data_path):
+def load2triples(data_path):
     lst = []
     with open(data_path, 'r') as f:
         for _line in f.readlines():
             _h, _r, _t = _line.strip().split('\t')
             lst.append((_h, _t, _r))
     return lst
+
+
+def triples2id(h2id, r2id, t2id, triples):
+    triple2id_lst = []
+    for triple in triples:
+        h, r, t = triple[0], triple[1], triple[2]
+        triple2id_lst.append([h2id[h], r2id[r], t2id[t]])
+    return torch.tensor(triple2id_lst)
 
 
 def save_key_vlist(dct, path):
@@ -86,6 +94,12 @@ def load_triples(triples_path):
             lst.append(tuple)
     return torch.tensor(lst)
 
+
+def get_dct_triples(rel_triples):
+    dct_triples = {}
+    for _e1, _r, _e2 in rel_triples:
+        dct_triples[(int(_e1), int(_e2))] = int(_r)
+    return dct_triples
 
 # def ent2id(kg: DataFrame):
 #     ent = []

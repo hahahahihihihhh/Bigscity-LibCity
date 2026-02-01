@@ -1,6 +1,5 @@
 # NYCTAXI20140103   sparsity: 740 / 39800 = 0.0186
 # sparsity ->  [0.01, 0.02, 0.03]
-import os
 import json
 import pickle
 import shutil
@@ -11,7 +10,7 @@ from libcity.data_preprocess.utils.utils import read_emb, initialize_seed, ensur
 from libcity.data_preprocess.utils.graph_gen import struct_graph_gen, function_graph_gen, pattern_graph_gen
 
 
-dataset, model = "SZ_TAXI", "DMKG_GNN"
+dataset, model = "TDRIVE20150406", "DMKG_GNN"
 initialize_seed(43)
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
@@ -52,13 +51,14 @@ def main():
     g_merge(sem_g, struct_g, type="struct_adj")
     g_merge(sem_g, pattern_g, type="pattern_adj")
     g_merge(sem_g, function_g, type="function_adj")
-    w = [[0 for _ in range(num_node)] for _ in range(num_node)]
+    w_dict = {}
     sem_kg = []
     for i in range(num_node):
         for j in range(num_node):
             if sem_g[i][j][0]:
-                w[i][j] = sem_g[i][j][1]
+                w_dict[(i, j)] = sem_g[i][j][1]
                 sem_kg.append([str(i), sem_g[i][j][0], str(j)])
+    print("sparsity: {}".format(sparsity))
     print(f"semantic graph sparsity: {len(sem_kg) / (num_node * (num_node - 1))}")
     # make aug_kg
     sem_kg_df = pd.DataFrame(sem_kg, columns=["origin", "rel", "destination"])
@@ -66,7 +66,7 @@ def main():
     ensure_dir(aug_kg_dir)
     sem_kg_df.to_csv(f"{aug_kg_dir}/sem_kg_s{sparsity}.csv", index=False)
     with open(f"{aug_kg_dir}/rel_weight.pickle", "wb") as f:
-        pickle.dump(w, f)
+        pickle.dump(w_dict, f)
     shutil.copy2(f"{dataset_prefix}/poi_kg.csv", f"{aug_kg_dir}/poi_kg.csv")
 
 

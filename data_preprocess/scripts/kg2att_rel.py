@@ -38,18 +38,24 @@ import numpy as np
 import pandas as pd
 
 
-dataset, model = "SZ_TAXI", "DMKG_GNN"
+dataset, model, type = "TDRIVE20150406", "DMKG_GNN", "poi"
 with open("setting.json", "r", encoding="utf-8") as f:
     settings = json.load(f)
 cfg = settings[dataset][model]
-attribute_file_path = cfg["attribute_file_path"]
-relation_file_path = cfg["relation_file_path"]
-krear_dir_path = cfg["krear_dir_path"]
 if model == "DMKG_GNN":
-    sparsity = cfg["sparsity"]
-    attribute_file_path = attribute_file_path.format(sparsity)
-    relation_file_path = relation_file_path.format(sparsity, sparsity)
-    krear_dir_path = krear_dir_path.format(sparsity)
+    attribute_file_path = cfg[type]["attribute_file_path"]
+    relation_file_path = cfg[type]["relation_file_path"]
+    krear_dir_path = cfg[type]["krear_dir_path"]
+    if type == "poi_STF":
+        sparsity = cfg["sparsity"]
+        attribute_file_path = attribute_file_path.format(sparsity)
+        relation_file_path = relation_file_path.format(sparsity, sparsity)
+        krear_dir_path = krear_dir_path.format(sparsity)
+else:
+    attribute_file_path = cfg["attribute_file_path"]
+    relation_file_path = cfg["relation_file_path"]
+    krear_dir_path = cfg["krear_dir_path"]
+
 
 # -----------------------------
 # Column auto-detection helpers
