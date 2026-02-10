@@ -29,6 +29,7 @@ from libcity.model.traffic_speed_prediction.KST_GCN import KST_GCN
 from libcity.model.traffic_speed_prediction.KE_GWN import KE_GWN
 from libcity.model.traffic_speed_prediction.KMHNet import KMHNet
 from libcity.model.traffic_speed_prediction.CKGGNN import CKGGNN
+from libcity.model.traffic_speed_prediction.MCK_GWN import MCK_GWN
 from libcity.model.traffic_speed_prediction.DMKG_GNN import DMKG_GNN
 
 
@@ -64,5 +65,6 @@ __all__ = [
     "KE_GWN",
     "KMHNet",
     "CKGGNN",
+    "MCK_GWN",
     "DMKG_GNN"
 ]

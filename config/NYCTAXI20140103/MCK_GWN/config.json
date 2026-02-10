@@ -1,0 +1,21 @@
+{
+    "task": "traffic_state_pred",
+    "model": "MCK_GWN",
+    "dataset": "NYCTAXI20140103",
+
+    "exp_id": 1336111,
+
+    "use_mh_adj": true,
+    "ke_dim": 32,
+    "max_hop": 1,
+    "sparsity": 0.02,
+
+    "max_epoch": 1,
+    "batch_size": 64,
+    "patience": 15,
+    "use_early_stop": true,
+    "cache_dataset": false,
+    "output_window": 12,
+    "metrics": ["masked_MAE", "masked_RMSE", "masked_MAPE"]
+
+}
