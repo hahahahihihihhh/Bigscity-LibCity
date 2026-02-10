@@ -3,15 +3,18 @@
     "model": "MCK_GWN",
     "dataset": "NYCTAXI20140103",
 
-    "exp_id": 1336111,
+    "exp_id": 100,
 
     "use_mh_adj": true,
     "ke_dim": 32,
     "max_hop": 1,
     "sparsity": 0.02,
+    "load_external": true,
+    "add_time_in_day": true,
+    "add_day_in_week": true,
 
-    "max_epoch": 1,
-    "batch_size": 64,
+    "max_epoch": 500,
+    "batch_size": 32,
     "patience": 15,
     "use_early_stop": true,
     "cache_dataset": false,

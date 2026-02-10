@@ -41,6 +41,9 @@ def train(config, total = 1):
                 dir_name += "_without_state_propagation"
             if config.get("without_time_attention"):
                 dir_name += "_without_time_attention"
+    if model_name == "MCK_GWN":
+        ke_dim, max_hop, sparsity = config['ke_dim'], config['max_hop'], config['sparsity']
+        dir_name += 'd{}_hop{}_s{}'.format(ke_dim, max_hop, sparsity)
     # if config.get('use_mh_adj', False):
     #     dir_name += '{}d_{}hop_s{}_b{}'.format(config['ke_dim'], config['max_hop'], config['sparsity'], config['batch_size'])
     save_dir = os.path.join(save_dir, dir_name)
