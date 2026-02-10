@@ -47,8 +47,8 @@
 
   "NYCTAXI20140103": {
     "num_nodes": 200,
-    "ke_dim": 64,
-    "max_hop": 1,
+    "ke_dim": 48,
+    "max_hop": 2,
     "sparsity": 0.03,
 
     "S_kg": {
@@ -84,7 +84,7 @@
 
   "TDRIVE20150406": {
     "num_nodes": 1024,
-    "ke_dim": 96,
+    "ke_dim": 64,
     "max_hop": 2,
     "sparsity": 0.03,
 

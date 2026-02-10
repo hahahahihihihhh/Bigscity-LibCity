@@ -2,15 +2,18 @@ import pickle
 
 import os
 import json
+import sys
+sys.path.append('/media/tmuc2907/Data/hahi/DK-GNN/Bigscity-LibCity')
+
 import pandas as pd
 import torch
-
 from encoder.att_encoder import AttEncoder
 from encoder.rel_encoder import process_feats, PathAttention, MHScoreLayer, gen_origin_path_feats
 from libcity.data_preprocess.utils.utils import read_emb, initialize_seed, load2dict, \
     load2triples, triples2id, ensure_dir, get_dct_triples
 
-dataset = "TDRIVE20150406"
+
+dataset = "NYCTAXI20140103"
 initialize_seed(43)
 device = torch.device('cuda')
 config_file = 'config.json'
@@ -54,9 +57,6 @@ def inter_encode(origin_path_feats):
     for i1d, (i2d, j2d) in i1d_to_ij2d.items():
         mh_score[i2d][j2d] = score[i1d]
     return mh_score
-
-
-
 
 
 if __name__ == '__main__':
